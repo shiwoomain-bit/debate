@@ -27,7 +27,17 @@
     }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between relative">
+
+  <!-- 커스텀 알림(토스트) 팝업: alert() 대체 -->
+  <div id="toastNotification" class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] transition-all duration-300 opacity-0 pointer-events-none -translate-y-4">
+    <div class="bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 border border-slate-700/60 min-w-[280px]">
+      <div id="toastIcon">
+        <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400"></i>
+      </div>
+      <span id="toastMessage" class="text-sm font-medium tracking-tight"></span>
+    </div>
+  </div>
 
   <!-- 헤더 -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
@@ -92,7 +102,7 @@
       </button>
     </div>
     
-    <!-- 전체화면 폼 본문 (스크롤 지원) -->
+    <!-- 전체화면 폼 본문 -->
     <div class="flex-1 overflow-y-auto p-4 sm:p-8 flex justify-center">
       <form id="proposalForm" onsubmit="submitAgenda(event)" class="w-full max-w-2xl bg-white p-6 sm:p-10 rounded-2xl border border-slate-200 shadow-sm space-y-6 my-auto">
         
@@ -181,6 +191,32 @@
 
     let currentUser = null;
     let agendas = [];
+    let toastTimeout = null;
+
+    // 커스텀 토스트 알림 함수
+    function showToast(message, type = "success") {
+      const toast = document.getElementById("toastNotification");
+      const msgEl = document.getElementById("toastMessage");
+      const iconEl = document.getElementById("toastIcon");
+
+      msgEl.innerText = message;
+
+      if (type === "success") {
+        iconEl.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400"></i>`;
+      } else {
+        iconEl.innerHTML = `<i data-lucide="alert-circle" class="w-5 h-5 text-amber-400"></i>`;
+      }
+      lucide.createIcons();
+
+      toast.classList.remove("opacity-0", "-translate-y-4", "pointer-events-none");
+      toast.classList.add("opacity-100", "translate-y-0");
+
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove("opacity-100", "translate-y-0");
+        toast.classList.add("opacity-0", "-translate-y-4", "pointer-events-none");
+      }, 3000);
+    }
 
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
@@ -212,12 +248,14 @@
       document.getElementById("googleBtn").classList.add("hidden");
       document.getElementById("userInfo").classList.remove("hidden");
       document.getElementById("userNameDisplay").innerText = `${currentUser.name} 님`;
+      showToast(`${currentUser.name}님, 환영합니다!`);
     }
 
     function handleLogout() {
       currentUser = null;
       document.getElementById("userInfo").classList.add("hidden");
       document.getElementById("googleBtn").classList.remove("hidden");
+      showToast("로그아웃되었습니다.");
     }
 
     function parseJwt(token) {
@@ -293,11 +331,12 @@
           numSpan.innerText = result.newLikes;
           btnElement.classList.add('bg-blue-600', 'text-white');
           btnElement.classList.remove('bg-blue-50/50', 'text-blue-700');
+          showToast("공감이 반영되었습니다!");
         } else if (result.status === "already_voted") {
-          alert("이미 공감 투표에 참여한 안건입니다.");
+          showToast("이미 공감 투표에 참여한 안건입니다.", "warn");
         }
       } catch (err) {
-        alert("통신 중 오류가 발생했습니다.");
+        showToast("통신 중 오류가 발생했습니다.", "warn");
       } finally {
         btnElement.disabled = false;
       }
@@ -306,7 +345,7 @@
     // 제안 모달 열기/닫기
     function openProposalModal() {
       document.getElementById("proposalModal").classList.remove("hidden");
-      document.body.style.overflow = "hidden"; // 배경 스크롤 방지
+      document.body.style.overflow = "hidden";
     }
 
     function closeProposalModal() {
@@ -327,6 +366,7 @@
       consentChk.disabled = false;
       consentChk.checked = true;
       document.getElementById("privacyDetailModal").classList.add("hidden");
+      showToast("이용 약관 확인이 완료되었습니다.");
     }
 
     // 안건 제출
@@ -334,7 +374,7 @@
       e.preventDefault();
       const consentChk = document.getElementById("privacyConsent");
       if (!consentChk.checked) {
-        alert("개인정보 수집 및 이용 내용을 확인하고 동의해야 제출할 수 있습니다.");
+        showToast("약관 [자세히 보기]를 확인하고 동의해 주세요.", "warn");
         return;
       }
 
@@ -365,16 +405,16 @@
           const result = await res.json();
 
           if (result.status === "success") {
-            alert("안건이 정상적으로 접수되었습니다. 함께 검토할게요!");
             closeProposalModal();
             fetchAgendas();
             submitBtn.disabled = false;
             submitBtn.innerText = "제출하기";
+            showToast("안건이 정상적으로 접수되었습니다. 함께 검토할게요!");
             return;
           } else if (result.status === "busy") {
             await new Promise(r => setTimeout(r, 2000));
           } else {
-            alert("저장 오류: " + result.message);
+            showToast("저장 오류: " + result.message, "warn");
             break;
           }
         } catch (err) {
@@ -382,7 +422,7 @@
         }
       }
 
-      alert("접속자가 많아 잠시 지연되고 있습니다. 잠시 후 다시 시도해 주세요.");
+      showToast("접속자가 많아 지연되고 있습니다. 잠시 후 다시 시도해 주세요.", "warn");
       submitBtn.disabled = false;
       submitBtn.innerText = "제출하기";
     }
