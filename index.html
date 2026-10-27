@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>학교 정기토론 안건 플랫폼</title>
   
-  <!-- 브라우저 탭 파비콘 (업로드한 logo.png 적용) -->
   <link rel="icon" type="image/png" href="./logo.png">
   <link rel="apple-touch-icon" href="./logo.png">
 
@@ -19,6 +18,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- 클라우드플레어 턴스타일 CDN -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
   <style>
     body {
@@ -35,7 +36,7 @@
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between relative">
 
-  <!-- 커스텀 알림(토스트) 팝업: alert() 대체 -->
+  <!-- 커스텀 알림(토스트) 팝업 -->
   <div id="toastNotification" class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] transition-all duration-300 opacity-0 pointer-events-none -translate-y-4">
     <div class="bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 border border-slate-700/60 min-w-[280px]">
       <div id="toastIcon">
@@ -45,7 +46,7 @@
     </div>
   </div>
 
-  <!-- 헤더 (로고 이미지 + 구분선 적용) -->
+  <!-- 헤더 (이우학교 로고 + 구분선) -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
     <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
@@ -131,7 +132,7 @@
 
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-2">제안 이유 및 세부 내용 <span class="text-red-500">*</span></label>
-          <textarea id="agendaContent" required rows="8" placeholder="현재 불편한 점이나 문제점, 그리고 안건이 통과되었을 때 기대되는 변화를 자유롭고 구체적으로 적어주세요." class="w-full text-sm border border-slate-300 rounded-xl p-3.5 focus:ring-2 focus:ring-blue-500 outline-none leading-relaxed"></textarea>
+          <textarea id="agendaContent" required rows="7" placeholder="현재 문제점과 기대되는 변화를 구체적으로 적어주세요." class="w-full text-sm border border-slate-300 rounded-xl p-3.5 focus:ring-2 focus:ring-blue-500 outline-none leading-relaxed"></textarea>
         </div>
 
         <!-- 개인정보 수집 동의 -->
@@ -148,8 +149,13 @@
           <p class="text-xs text-slate-400">※ 우측 [자세히 보기]를 눌러 고지문을 확인하면 체크할 수 있습니다.</p>
         </div>
 
+        <!-- 클라우드플레어 턴스타일 위젯 영역 -->
+        <div class="flex justify-center pt-1 min-h-[65px]">
+          <div id="turnstileWidget"></div>
+        </div>
+
         <!-- 버튼 영역 -->
-        <div class="flex gap-3 pt-3">
+        <div class="flex gap-3 pt-2">
           <button type="button" onclick="closeProposalModal()" class="w-1/3 py-3 border border-slate-300 text-slate-700 font-medium rounded-xl text-sm hover:bg-slate-50 transition">닫기</button>
           <button type="submit" id="submitBtn" class="w-2/3 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl text-sm transition shadow-sm">제출하기</button>
         </div>
@@ -192,23 +198,33 @@
 
   <script>
     // ==========================================
-    // 1. 핵심 환경 설정
+    // 핵심 환경 설정
     // ==========================================
     const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
     const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbzsJCugz19a3ckh4Ek2kNCF_QxQA7vcAT4deE196v6fujRyH7-8HqAnGwGK6K5Js1whbQ/exec";
+    
+    // 발급받은 클라우드플레어 턴스타일 Sitekey
+    const TURNSTILE_SITE_KEY = "0x4AAAAAAFoRUbpteTboq6Il";
 
     let currentUser = null;
     let agendas = [];
     let toastTimeout = null;
+    let isCaptchaVerified = false;
+    let turnstileWidgetId = null;
 
-    // 커스텀 토스트 알림 함수
+    // 기기 식별 고유 ID (비로그인 공감 구분용)
+    let deviceId = localStorage.getItem("device_vote_id");
+    if (!deviceId) {
+      deviceId = "guest_" + Math.random().toString(36).substring(2, 10);
+      localStorage.setItem("device_vote_id", deviceId);
+    }
+
     function showToast(message, type = "success") {
       const toast = document.getElementById("toastNotification");
       const msgEl = document.getElementById("toastMessage");
       const iconEl = document.getElementById("toastIcon");
 
       msgEl.innerText = message;
-
       if (type === "success") {
         iconEl.innerHTML = `<i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400"></i>`;
       } else {
@@ -230,13 +246,11 @@
       lucide.createIcons();
       fetchAgendas();
 
-      // 마우스 우클릭 금지
       document.addEventListener('contextmenu', (e) => {
         e.preventDefault();
       });
     });
 
-    // 구글 로그인 초기화
     window.onload = function() {
       if (typeof google !== "undefined" && GOOGLE_CLIENT_ID !== "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com") {
         google.accounts.id.initialize({
@@ -275,7 +289,6 @@
       return JSON.parse(jsonPayload);
     }
 
-    // 안건 목록 로드
     async function fetchAgendas() {
       const listEl = document.getElementById("agendaList");
       try {
@@ -320,7 +333,6 @@
       lucide.createIcons();
     }
 
-    // 공감 투표
     async function likeAgenda(id, btnElement) {
       const numSpan = btnElement.querySelector('.like-num');
       btnElement.disabled = true;
@@ -331,7 +343,7 @@
           body: JSON.stringify({ 
             action: "like", 
             id: id,
-            userEmail: currentUser ? currentUser.email : "guest_device"
+            userEmail: currentUser ? currentUser.email : deviceId
           })
         });
         const result = await res.json();
@@ -350,10 +362,20 @@
       }
     }
 
-    // 제안 모달 열기/닫기
     function openProposalModal() {
       document.getElementById("proposalModal").classList.remove("hidden");
       document.body.style.overflow = "hidden";
+
+      // 턴스타일 위젯 렌더링
+      if (window.turnstile) {
+        document.getElementById("turnstileWidget").innerHTML = "";
+        turnstileWidgetId = turnstile.render('#turnstileWidget', {
+          sitekey: TURNSTILE_SITE_KEY,
+          callback: function(token) {
+            isCaptchaVerified = true;
+          },
+        });
+      }
     }
 
     function closeProposalModal() {
@@ -363,6 +385,10 @@
       const chk = document.getElementById("privacyConsent");
       chk.checked = false;
       chk.disabled = true;
+      isCaptchaVerified = false;
+      if (window.turnstile && turnstileWidgetId !== null) {
+        turnstile.reset(turnstileWidgetId);
+      }
     }
 
     function openPrivacyModal() {
@@ -377,12 +403,16 @@
       showToast("이용 약관 확인이 완료되었습니다.");
     }
 
-    // 안건 제출
     async function submitAgenda(e) {
       e.preventDefault();
       const consentChk = document.getElementById("privacyConsent");
       if (!consentChk.checked) {
         showToast("약관 [자세히 보기]를 확인하고 동의해 주세요.", "warn");
+        return;
+      }
+
+      if (!isCaptchaVerified) {
+        showToast("보안 확인(로봇 방지)이 완료되지 않았습니다.", "warn");
         return;
       }
 
