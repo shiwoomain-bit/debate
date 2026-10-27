@@ -8,12 +8,16 @@
   <link rel="icon" type="image/png" href="./logo.png">
   <link rel="apple-touch-icon" href="./logo.png">
 
+  <meta name="robots" content="noindex, nofollow">
   <meta name="description" content="학생·학부모·교직원이 함께 참여하는 공식 정기토론 안건 제안 및 공감 플랫폼입니다.">
   <meta property="og:type" content="website">
   <meta property="og:title" content="학교 정기토론 안건 플랫폼">
   <meta property="og:description" content="학생과 학부모가 직접 참여하는 학교 토론 안건 수렴 공간">
   <meta property="og:image" content="./logo.png">
   
+  <!-- Pretendard 한글 웹폰트 CDN -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -21,6 +25,8 @@
 
   <style>
     body {
+      font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+      letter-spacing: -0.025em;
       -webkit-user-select: none;
       -moz-user-select: none;
       -ms-user-select: none;
@@ -29,13 +35,15 @@
     input, textarea {
       -webkit-user-select: auto;
       user-select: auto;
+      letter-spacing: -0.02em;
     }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between relative">
+<body class="bg-stone-100 text-stone-800 min-h-screen flex flex-col justify-between relative selection:bg-emerald-100 selection:text-emerald-900">
 
+  <!-- 커스텀 토스트 알림 -->
   <div id="toastNotification" class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] transition-all duration-300 opacity-0 pointer-events-none -translate-y-4">
-    <div class="bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 border border-slate-700/60 min-w-[280px]">
+    <div class="bg-stone-900/95 backdrop-blur-sm text-stone-100 px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 border border-stone-800 min-w-[280px]">
       <div id="toastIcon">
         <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400"></i>
       </div>
@@ -43,77 +51,85 @@
     </div>
   </div>
 
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+  <!-- 헤더 -->
+  <header class="bg-white/80 backdrop-blur-md border-b border-stone-200/80 sticky top-0 z-30 transition-all">
     <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <img src="./logo.png" alt="이우학교 로고" class="h-9 w-auto object-contain">
-        <div class="h-5 w-px bg-slate-300"></div>
-        <span class="font-bold text-base sm:text-lg text-slate-900 tracking-tight">정기토론 안건 플랫폼</span>
+        <img src="./logo.png" alt="이우학교 로고" class="h-8 w-auto object-contain">
+        <div class="h-4 w-px bg-stone-200"></div>
+        <span class="font-bold text-base sm:text-lg text-stone-900 tracking-tight">정기토론 안건 플랫폼</span>
       </div>
       <div id="authArea" class="flex items-center gap-3">
         <div id="googleBtn"></div>
-        <div id="userInfo" class="hidden flex items-center gap-2 text-sm">
-          <span id="userNameDisplay" class="font-medium text-slate-700"></span>
-          <button onclick="handleLogout()" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1 rounded">로그아웃</button>
+        <div id="userInfo" class="hidden flex items-center gap-2.5 text-sm">
+          <span id="userNameDisplay" class="font-semibold text-stone-700"></span>
+          <button onclick="handleLogout()" class="text-xs bg-stone-100 hover:bg-stone-200 text-stone-600 px-3 py-1.5 rounded-lg font-medium transition">로그아웃</button>
         </div>
       </div>
     </div>
   </header>
 
+  <!-- 메인 본문 -->
   <main class="max-w-4xl mx-auto px-4 py-8 w-full flex-grow">
-    <div class="bg-white border border-slate-200 rounded-xl p-6 mb-8 shadow-sm">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 class="text-xl font-bold text-slate-900 mb-1">우리 학교를 바꾸는 토론 안건 제안</h1>
-          <p class="text-sm text-slate-500">공감 수 10개 이상을 달성한 안건은 운영위원회 검토 대상에 상정됩니다.</p>
+    <!-- 자연스럽게 녹아든 히어로 섹션 -->
+    <div class="py-6 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 border-b border-stone-200/80">
+      <div>
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 text-xs font-semibold mb-2">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+          2026 이우 공동체 자치 의제
         </div>
-        <button onclick="openProposalModal()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-lg flex items-center justify-center gap-2 transition">
-          <i data-lucide="plus-circle" class="w-4 h-4"></i>
-          안건 제안하기
-        </button>
+        <h1 class="text-2xl font-bold text-stone-900 tracking-tight mb-1.5">학교를 바꾸는 토론 안건 제안</h1>
+        <p class="text-sm text-stone-500 leading-relaxed">공감 10개 이상을 달성한 안건은 운영위원회 공식 검토 대상에 상정됩니다.</p>
       </div>
+      <button onclick="openProposalModal()" class="w-full sm:w-auto bg-emerald-700 hover:bg-emerald-800 active:scale-[0.98] text-white font-medium px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm transition">
+        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+        <span>새 안건 제안</span>
+      </button>
     </div>
 
+    <!-- 목록 헤더 -->
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+      <h2 class="text-base font-bold text-stone-900 flex items-center gap-2">
         <span>현재 접수된 안건</span>
-        <span id="totalCount" class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">0</span>
+        <span id="totalCount" class="text-xs bg-emerald-100/70 text-emerald-800 px-2 py-0.5 rounded-full font-bold">0</span>
       </h2>
       <div class="flex items-center gap-3">
-        <span class="flex items-center gap-1.5 text-[11px] text-emerald-600 font-medium">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> 실시간 자동 갱신 중
+        <span class="flex items-center gap-1.5 text-xs text-stone-400 font-normal">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> 실시간 자동 갱신
         </span>
-        <button onclick="fetchAgendas(false)" class="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1">
-          <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i> 새로고침
+        <button onclick="fetchAgendas(false)" class="text-xs text-stone-400 hover:text-stone-700 flex items-center gap-1 transition">
+          <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
         </button>
       </div>
     </div>
 
-    <div id="agendaList" class="space-y-4">
-      <div class="text-center py-16 text-slate-400 bg-white border border-slate-200 rounded-xl">
-        <i data-lucide="loader" class="w-6 h-6 animate-spin mx-auto mb-2"></i>
+    <!-- 안건 목록 컨테이너 -->
+    <div id="agendaList" class="space-y-3.5">
+      <div class="text-center py-16 text-stone-400 bg-white/60 border border-stone-200/80 rounded-2xl">
+        <i data-lucide="loader" class="w-6 h-6 animate-spin mx-auto mb-2 text-stone-400"></i>
         안건 데이터를 불러오고 있습니다...
       </div>
     </div>
   </main>
 
-  <div id="proposalModal" class="fixed inset-0 bg-slate-50 z-50 hidden flex flex-col">
-    <div class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center shadow-sm">
+  <!-- 전체화면 제안 모달 -->
+  <div id="proposalModal" class="fixed inset-0 bg-stone-50 z-50 hidden flex flex-col">
+    <div class="bg-white border-b border-stone-200 px-6 py-4 flex justify-between items-center shadow-xs">
       <div class="flex items-center gap-3">
-        <img src="./logo.png" alt="이우학교 로고" class="h-8 w-auto object-contain">
-        <div class="h-4 w-px bg-slate-300"></div>
-        <h3 class="font-bold text-slate-900 text-lg">새 안건 제안하기</h3>
+        <img src="./logo.png" alt="이우학교 로고" class="h-7 w-auto object-contain">
+        <div class="h-4 w-px bg-stone-200"></div>
+        <h3 class="font-bold text-stone-900 text-lg">새 안건 제안하기</h3>
       </div>
-      <button onclick="closeProposalModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition">
+      <button onclick="closeProposalModal()" class="text-stone-400 hover:text-stone-700 p-1 rounded-lg hover:bg-stone-100 transition">
         <i data-lucide="x" class="w-6 h-6"></i>
       </button>
     </div>
     
     <div class="flex-1 overflow-y-auto p-4 sm:p-8 flex justify-center">
-      <form id="proposalForm" onsubmit="submitAgenda(event)" class="w-full max-w-2xl bg-white p-6 sm:p-10 rounded-2xl border border-slate-200 shadow-sm space-y-6 my-auto">
+      <form id="proposalForm" onsubmit="submitAgenda(event)" class="w-full max-w-xl bg-white p-6 sm:p-9 rounded-2xl border border-stone-200 shadow-sm space-y-5 my-auto">
         <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">제안자 소속 <span class="text-red-500">*</span></label>
-          <select id="userRole" required class="w-full text-sm border border-slate-300 rounded-xl p-3 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+          <label class="block text-xs font-semibold text-stone-700 mb-2">제안자 소속 <span class="text-emerald-700">*</span></label>
+          <select id="userRole" required class="w-full text-sm border border-stone-200 rounded-xl p-3 bg-stone-50/50 hover:bg-white focus:bg-white focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none transition">
             <option value="">소속을 선택해 주세요</option>
             <option value="학생">재학생</option>
             <option value="학부모">학부모</option>
@@ -122,76 +138,77 @@
         </div>
 
         <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">안건 제목 <span class="text-red-500">*</span></label>
-          <input type="text" id="agendaTitle" required placeholder="예: 도서관 자습공간 개방 시간 연장의 건" class="w-full text-sm border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none">
+          <label class="block text-xs font-semibold text-stone-700 mb-2">안건 제목 <span class="text-emerald-700">*</span></label>
+          <input type="text" id="agendaTitle" required placeholder="예: 교내 텀블러 세척존 추가 설치 제안" class="w-full text-sm border border-stone-200 rounded-xl p-3 bg-stone-50/50 hover:bg-white focus:bg-white focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none transition">
         </div>
 
         <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">제안 이유 및 세부 내용 <span class="text-red-500">*</span></label>
-          <textarea id="agendaContent" required rows="7" placeholder="현재 문제점과 기대되는 변화를 구체적으로 적어주세요." class="w-full text-sm border border-slate-300 rounded-xl p-3.5 focus:ring-2 focus:ring-blue-500 outline-none leading-relaxed"></textarea>
+          <label class="block text-xs font-semibold text-stone-700 mb-2">제안 배경 및 기대 효과 <span class="text-emerald-700">*</span></label>
+          <textarea id="agendaContent" required rows="7" placeholder="현재 겪고 있는 문제점과 이 안건을 통해 학교가 어떻게 바뀌면 좋을지 구체적으로 작성해 주세요." class="w-full text-sm border border-stone-200 rounded-xl p-3.5 bg-stone-50/50 hover:bg-white focus:bg-white focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none leading-relaxed transition"></textarea>
         </div>
 
-        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
-          <div class="flex items-center justify-between text-xs sm:text-sm mb-1.5">
+        <div class="p-3.5 bg-stone-50 rounded-xl border border-stone-200/80">
+          <div class="flex items-center justify-between text-xs sm:text-sm mb-1">
             <div class="flex items-center gap-2">
-              <input type="checkbox" id="privacyConsent" disabled class="w-4 h-4 rounded border-slate-300 text-blue-600 cursor-not-allowed">
-              <label for="privacyConsent" class="font-medium text-slate-700">개인정보 수집 및 이용 동의 (필수)</label>
+              <input type="checkbox" id="privacyConsent" disabled class="w-4 h-4 rounded border-stone-300 text-emerald-700 focus:ring-emerald-600 cursor-not-allowed">
+              <label for="privacyConsent" class="font-medium text-stone-700 cursor-pointer">개인정보 수집 및 이용 동의 (필수)</label>
             </div>
-            <button type="button" onclick="openPrivacyModal()" class="text-blue-600 hover:underline font-semibold flex items-center gap-0.5">
-              자세히 보기 <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            <button type="button" onclick="openPrivacyModal()" class="text-emerald-700 hover:text-emerald-800 font-semibold flex items-center gap-0.5 text-xs transition">
+              전문 확인 <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
             </button>
           </div>
-          <p class="text-xs text-slate-400">※ 우측 [자세히 보기]를 눌러 고지문을 확인하면 체크할 수 있습니다.</p>
+          <p class="text-[11px] text-stone-400">※ 우측 [전문 확인]을 열람하신 후 동의 체크가 가능합니다.</p>
         </div>
 
+        <!-- 턴스타일 위젯: light 모드로 흰 바탕과 완전 융화 -->
         <div class="flex justify-center pt-1 min-h-[65px]">
           <div id="turnstileWidget"></div>
         </div>
 
-        <div class="flex gap-3 pt-2">
-          <button type="button" onclick="closeProposalModal()" class="w-1/3 py-3 border border-slate-300 text-slate-700 font-medium rounded-xl text-sm hover:bg-slate-50 transition">닫기</button>
-          <button type="submit" id="submitBtn" class="w-2/3 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl text-sm transition shadow-sm">제출하기</button>
+        <div class="flex gap-2.5 pt-1">
+          <button type="button" onclick="closeProposalModal()" class="w-1/3 py-3 border border-stone-200 text-stone-600 font-medium rounded-xl text-sm hover:bg-stone-50 transition">닫기</button>
+          <button type="submit" id="submitBtn" class="w-2/3 py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-medium rounded-xl text-sm transition shadow-sm">제출하기</button>
         </div>
       </form>
     </div>
   </div>
 
-  <div id="privacyDetailModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 text-sm">
-      <h4 class="font-bold text-slate-900 text-base mb-3 flex items-center gap-2">
-        <i data-lucide="shield-check" class="text-blue-600"></i>
-        개인정보 수집 및 이용 안내
+  <!-- 개인정보 약관 모달 -->
+  <div id="privacyDetailModal" class="fixed inset-0 bg-stone-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 text-sm border border-stone-200">
+      <h4 class="font-bold text-stone-900 text-base mb-3 flex items-center gap-2">
+        <i data-lucide="shield-check" class="text-emerald-700"></i>
+        개인정보 수집 및 이용 동의
       </h4>
-      <div class="space-y-2 text-slate-600 leading-relaxed text-xs bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4">
-        <p>• <strong>수집 및 이용 목적:</strong> 토론 안건 접수, 제안자 본인 확인, 검토 결과 안내</p>
+      <div class="space-y-2 text-stone-600 leading-relaxed text-xs bg-stone-50 p-4 rounded-xl border border-stone-200/70 mb-4">
+        <p>• <strong>수집 및 이용 목적:</strong> 토론 안건 접수, 제안자 본인 확인, 처리 결과 안내</p>
         <p>• <strong>수집 항목:</strong> 구글 프로필 이메일, 제안자 성명, 선택 소속(학생·학부모·교원)</p>
         <p>• <strong>보유 및 이용 기간:</strong> 2026학년도 정기 토론회 종료 및 회의록 공시 시 즉시 파기</p>
-        <p class="text-slate-400 pt-1 border-t border-slate-200">※ 정보주체는 동의를 거부할 권리가 있습니다. 단, 동의를 거부할 시 안건 접수가 불가능합니다.</p>
+        <p class="text-stone-400 pt-1.5 border-t border-stone-200">※ 정보주체는 동의를 거부할 권리가 있습니다. 단, 동의를 거부할 시 안건 접수가 불가능합니다.</p>
       </div>
-      <div class="text-right">
-        <button type="button" onclick="confirmPrivacyRead()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-xs">
-          내용을 확인하였으며 동의합니다
-        </button>
-      </div>
+      <button type="button" onclick="confirmPrivacyRead()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-medium py-2.5 rounded-xl text-xs transition">
+        내용을 모두 확인하였으며 동의합니다
+      </button>
     </div>
   </div>
 
-  <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-500">
+  <!-- 푸터 -->
+  <footer class="bg-white border-t border-stone-200/80 py-8 mt-12 text-center text-xs text-stone-500">
     <div class="max-w-4xl mx-auto px-4 space-y-2">
-      <p class="font-bold text-slate-700">© 2026 이우중학교 정기토론 기획단. All rights reserved.</p>
-      <p class="text-[11px] text-slate-400 leading-relaxed max-w-2xl mx-auto">
+      <p class="font-bold text-stone-700">© 2026 이우중학교 정기토론 기획단. All rights reserved.</p>
+      <p class="text-[11px] text-stone-400 leading-relaxed max-w-2xl mx-auto">
         본 시스템의 소스코드, UI 설계 및 토론 기록물은 저작권법의 보호를 받습니다.<br>
-        본 사이트의 데이터는 <strong>교내 커뮤니티 전용</strong>으로 이용이 허락되어 있으며, 
-        사전 동의 없는 <strong>무단 복제, 2차 가공, 외부 커뮤니티 유출을 엄격히 금지</strong>합니다.
+        본 사이트의 데이터는 <strong>교내 커뮤니티 전용</strong>으로 운영되며, 
+        사전 동의 없는 <strong>무단 복제, 2차 가공, 외부 유출을 엄격히 금지</strong>합니다.
       </p>
     </div>
   </footer>
 
-  <!-- 플로팅 맨 위로 가기 버튼 -->
+  <!-- 플로팅 탑 버튼 -->
   <button 
     id="scrollTopBtn" 
     onclick="scrollToTop()" 
-    class="fixed bottom-6 right-6 z-40 bg-white/90 hover:bg-white text-slate-700 hover:text-blue-600 p-3 rounded-full shadow-lg border border-slate-200 transition-all duration-300 opacity-0 pointer-events-none translate-y-4 backdrop-blur-sm focus:outline-none"
+    class="fixed bottom-6 right-6 z-40 bg-white/95 hover:bg-white text-stone-600 hover:text-emerald-700 p-3 rounded-full shadow-md border border-stone-200 transition-all duration-300 opacity-0 pointer-events-none translate-y-4 backdrop-blur-sm focus:outline-none"
     aria-label="맨 위로 이동">
     <i data-lucide="arrow-up" class="w-5 h-5"></i>
   </button>
@@ -241,14 +258,12 @@
       lucide.createIcons();
       fetchAgendas(true);
 
-      // 10초 주기 실시간 자동 폴링
       setInterval(() => {
         if (isPollingActive) {
           fetchAgendas(false);
         }
       }, 10000);
 
-      // 스크롤 감지 및 TOP 버튼 토글
       const scrollTopBtn = document.getElementById("scrollTopBtn");
       window.addEventListener("scroll", () => {
         if (window.scrollY > 300) {
@@ -324,7 +339,7 @@
         }
       } catch (err) {
         if (isInitial) {
-          listEl.innerHTML = `<div class="text-center py-12 bg-white border border-slate-200 rounded-xl text-slate-500 text-sm">데이터를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.</div>`;
+          listEl.innerHTML = `<div class="text-center py-12 bg-white/70 border border-stone-200 rounded-2xl text-stone-500 text-sm">데이터를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.</div>`;
         }
       }
     }
@@ -334,23 +349,23 @@
       document.getElementById("totalCount").innerText = agendas.length;
 
       if (agendas.length === 0) {
-        listEl.innerHTML = `<div class="text-center py-12 bg-white border border-slate-200 rounded-xl text-slate-400 text-sm">등록된 안건이 아직 없습니다. 첫 번째 안건을 제안해 보세요!</div>`;
+        listEl.innerHTML = `<div class="text-center py-12 bg-white/70 border border-stone-200 rounded-2xl text-stone-400 text-sm">등록된 안건이 아직 없습니다. 첫 번째 안건을 제안해 보세요!</div>`;
         return;
       }
 
       listEl.innerHTML = agendas.map(item => `
-        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-slate-300 transition">
+        <div class="bg-white border border-stone-200/90 rounded-2xl p-5 shadow-xs hover:border-stone-300 transition-all">
           <div class="flex items-start justify-between gap-4">
-            <div class="space-y-1.5 flex-1">
+            <div class="space-y-2 flex-1">
               <div class="flex items-center gap-2">
-                <span class="text-[11px] font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded">${item.role}</span>
-                <span class="text-xs text-slate-400">${String(item.timestamp).slice(0, 10)}</span>
+                <span class="text-[11px] font-semibold bg-stone-100 text-stone-600 px-2.5 py-0.5 rounded-md">${item.role}</span>
+                <span class="text-xs text-stone-400">${String(item.timestamp).slice(0, 10)}</span>
               </div>
-              <h3 class="text-base font-bold text-slate-900">${escapeHtml(item.title)}</h3>
-              <p class="text-sm text-slate-600 whitespace-pre-line leading-relaxed">${escapeHtml(item.content)}</p>
+              <h3 class="text-base font-bold text-stone-900 tracking-tight leading-snug">${escapeHtml(item.title)}</h3>
+              <p class="text-sm text-stone-600 whitespace-pre-line leading-relaxed">${escapeHtml(item.content)}</p>
             </div>
-            <button onclick="likeAgenda('${item.id}', this)" class="flex flex-col items-center justify-center min-w-[52px] h-[52px] border border-blue-200 bg-blue-50/50 hover:bg-blue-100 rounded-lg text-blue-700 transition">
-              <i data-lucide="thumbs-up" class="w-4 h-4 mb-0.5"></i>
+            <button onclick="likeAgenda('${item.id}', this)" class="flex flex-col items-center justify-center min-w-[54px] h-[54px] border border-stone-200 bg-stone-50/70 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 rounded-xl text-stone-600 transition-all group">
+              <i data-lucide="thumbs-up" class="w-4 h-4 mb-0.5 group-hover:scale-110 transition-transform"></i>
               <span class="text-xs font-bold like-num">${item.likes}</span>
             </button>
           </div>
@@ -375,11 +390,11 @@
         const result = await res.json();
         if (result.status === "success") {
           numSpan.innerText = result.newLikes;
-          btnElement.classList.add('bg-blue-600', 'text-white');
-          btnElement.classList.remove('bg-blue-50/50', 'text-blue-700');
+          btnElement.classList.add('bg-emerald-700', 'text-white', 'border-emerald-700');
+          btnElement.classList.remove('bg-stone-50/70', 'text-stone-600', 'border-stone-200');
           showToast("공감이 반영되었습니다!");
         } else if (result.status === "already_voted") {
-          showToast("이미 공감 투표에 참여한 안건입니다.", "warn");
+          showToast("이미 공감에 참여한 안건입니다.", "warn");
         }
       } catch (err) {
         showToast("통신 중 오류가 발생했습니다.", "warn");
@@ -397,6 +412,7 @@
         document.getElementById("turnstileWidget").innerHTML = "";
         turnstileWidgetId = turnstile.render('#turnstileWidget', {
           sitekey: TURNSTILE_SITE_KEY,
+          theme: 'light',
           callback: function(token) {
             isCaptchaVerified = true;
           },
@@ -436,14 +452,14 @@
       consentChk.disabled = false;
       consentChk.checked = true;
       document.getElementById("privacyDetailModal").classList.add("hidden");
-      showToast("이용 약관 확인이 완료되었습니다.");
+      showToast("이용 약관 동의가 완료되었습니다.");
     }
 
     async function submitAgenda(e) {
       e.preventDefault();
       const consentChk = document.getElementById("privacyConsent");
       if (!consentChk.checked) {
-        showToast("약관 [자세히 보기]를 확인하고 동의해 주세요.", "warn");
+        showToast("약관 [전문 확인]을 열람하고 동의해 주세요.", "warn");
         return;
       }
 
