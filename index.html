@@ -37,6 +37,21 @@
       user-select: auto;
       letter-spacing: -0.02em;
     }
+    /* 긴 글 3줄 말줄임 스타일 */
+    .line-clamp-3 {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    /* 가로 스크롤바 숨기기 (모바일 필터 탭용) */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
   </style>
 </head>
 <body class="bg-stone-100 text-stone-800 min-h-screen flex flex-col justify-between relative selection:bg-emerald-100 selection:text-emerald-900">
@@ -54,7 +69,7 @@
   <!-- 헤더 -->
   <header class="bg-white/80 backdrop-blur-md border-b border-stone-200/80 sticky top-0 z-30 transition-all">
     <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 cursor-pointer" onclick="scrollToTop()">
         <img src="./logo.png" alt="이우학교 로고" class="h-8 w-auto object-contain">
         <div class="h-4 w-px bg-stone-200"></div>
         <span class="font-bold text-base sm:text-lg text-stone-900 tracking-tight">정기토론 안건 플랫폼</span>
@@ -71,7 +86,7 @@
 
   <!-- 메인 본문 -->
   <main class="max-w-4xl mx-auto px-4 py-8 w-full flex-grow">
-    <!-- 자연스럽게 녹아든 히어로 섹션 -->
+    <!-- 히어로 섹션 -->
     <div class="py-6 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 border-b border-stone-200/80">
       <div>
         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 text-xs font-semibold mb-2">
@@ -87,18 +102,59 @@
       </button>
     </div>
 
-    <!-- 목록 헤더 -->
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-base font-bold text-stone-900 flex items-center gap-2">
-        <span>현재 접수된 안건</span>
-        <span id="totalCount" class="text-xs bg-emerald-100/70 text-emerald-800 px-2 py-0.5 rounded-full font-bold">0</span>
+    <!-- 검색 및 필터 컨트롤 영역 -->
+    <div class="bg-white p-3.5 rounded-2xl border border-stone-200/80 shadow-xs mb-5 space-y-3">
+      <div class="flex flex-col sm:flex-row gap-2.5">
+        <!-- 검색창 -->
+        <div class="relative flex-1">
+          <i data-lucide="search" class="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+          <input 
+            type="text" 
+            id="searchInput" 
+            oninput="renderAgendas()" 
+            placeholder="안건 제목이나 키워드로 검색해 보세요..." 
+            class="w-full pl-9 pr-8 py-2 text-xs sm:text-sm bg-stone-50 border border-stone-200/80 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none transition"
+          >
+          <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600">
+            <i data-lucide="x-circle" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- 정렬 선택 -->
+        <div class="flex items-center gap-2">
+          <select id="sortOrder" onchange="renderAgendas()" class="w-full sm:w-auto text-xs sm:text-sm border border-stone-200/80 rounded-xl px-3 py-2 bg-stone-50 hover:bg-white text-stone-700 font-medium outline-none focus:border-emerald-600 transition cursor-pointer">
+            <option value="latest">최신 등록순</option>
+            <option value="popular">공감 많은순</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 카테고리 필터 탭 -->
+      <div class="flex items-center justify-between gap-2 pt-1 border-t border-stone-100">
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" id="filterTabs">
+          <button onclick="setFilter('all')" data-filter="all" class="filter-btn shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg bg-stone-900 text-white transition">전체</button>
+          <button onclick="setFilter('qualified')" data-filter="qualified" class="filter-btn shrink-0 text-xs font-medium px-3 py-1.5 rounded-lg bg-stone-100 text-stone-600 hover:bg-stone-200/70 transition flex items-center gap-1">
+            <span>🔥 상정 대상 (10+)</span>
+          </button>
+          <button onclick="setFilter('학생')" data-filter="학생" class="filter-btn shrink-0 text-xs font-medium px-3 py-1.5 rounded-lg bg-stone-100 text-stone-600 hover:bg-stone-200/70 transition">재학생</button>
+          <button onclick="setFilter('학부모')" data-filter="학부모" class="filter-btn shrink-0 text-xs font-medium px-3 py-1.5 rounded-lg bg-stone-100 text-stone-600 hover:bg-stone-200/70 transition">학부모</button>
+          <button onclick="setFilter('교직원')" data-filter="교직원" class="filter-btn shrink-0 text-xs font-medium px-3 py-1.5 rounded-lg bg-stone-100 text-stone-600 hover:bg-stone-200/70 transition">교직원</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 목록 상단 상태바 -->
+    <div class="flex items-center justify-between mb-3.5 px-1">
+      <h2 class="text-sm font-bold text-stone-700 flex items-center gap-2">
+        <span id="filterLabel">조회된 안건</span>
+        <span id="totalCount" class="text-xs bg-emerald-100/80 text-emerald-800 px-2 py-0.5 rounded-full font-bold">0</span>
       </h2>
       <div class="flex items-center gap-3">
         <span class="flex items-center gap-1.5 text-xs text-stone-400 font-normal">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> 실시간 자동 갱신
         </span>
-        <button onclick="fetchAgendas(false)" class="text-xs text-stone-400 hover:text-stone-700 flex items-center gap-1 transition">
-          <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+        <button onclick="fetchAgendas(false, true)" class="text-xs text-stone-400 hover:text-stone-700 flex items-center gap-1 transition p-1 rounded-lg hover:bg-stone-200/50" title="수동 새로고침">
+          <i data-lucide="rotate-cw" id="refreshIcon" class="w-3.5 h-3.5"></i>
         </button>
       </div>
     </div>
@@ -119,8 +175,9 @@
         <img src="./logo.png" alt="이우학교 로고" class="h-7 w-auto object-contain">
         <div class="h-4 w-px bg-stone-200"></div>
         <h3 class="font-bold text-stone-900 text-lg">새 안건 제안하기</h3>
+        <span id="draftBadge" class="hidden text-[11px] font-medium bg-stone-100 text-stone-500 px-2 py-0.5 rounded-md">자동 임시저장됨</span>
       </div>
-      <button onclick="closeProposalModal()" class="text-stone-400 hover:text-stone-700 p-1 rounded-lg hover:bg-stone-100 transition">
+      <button onclick="closeProposalModal()" class="text-stone-400 hover:text-stone-700 p-1 rounded-lg hover:bg-stone-100 transition" title="닫기 (ESC)">
         <i data-lucide="x" class="w-6 h-6"></i>
       </button>
     </div>
@@ -138,13 +195,19 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-stone-700 mb-2">안건 제목 <span class="text-emerald-700">*</span></label>
-          <input type="text" id="agendaTitle" required placeholder="예: 교내 텀블러 세척존 추가 설치 제안" class="w-full text-sm border border-stone-200 rounded-xl p-3 bg-stone-50/50 hover:bg-white focus:bg-white focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none transition">
+          <div class="flex justify-between items-center mb-2">
+            <label class="block text-xs font-semibold text-stone-700">안건 제목 <span class="text-emerald-700">*</span></label>
+            <span id="titleCounter" class="text-[11px] text-stone-400">0 / 60자</span>
+          </div>
+          <input type="text" id="agendaTitle" maxlength="60" required placeholder="예: 교내 텀블러 세척존 추가 설치 제안" class="w-full text-sm border border-stone-200 rounded-xl p-3 bg-stone-50/50 hover:bg-white focus:bg-white focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none transition">
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-stone-700 mb-2">제안 배경 및 기대 효과 <span class="text-emerald-700">*</span></label>
-          <textarea id="agendaContent" required rows="7" placeholder="현재 겪고 있는 문제점과 이 안건을 통해 학교가 어떻게 바뀌면 좋을지 구체적으로 작성해 주세요." class="w-full text-sm border border-stone-200 rounded-xl p-3.5 bg-stone-50/50 hover:bg-white focus:bg-white focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none leading-relaxed transition"></textarea>
+          <div class="flex justify-between items-center mb-2">
+            <label class="block text-xs font-semibold text-stone-700">제안 배경 및 기대 효과 <span class="text-emerald-700">*</span></label>
+            <span id="contentCounter" class="text-[11px] text-stone-400">0 / 1000자</span>
+          </div>
+          <textarea id="agendaContent" maxlength="1000" required rows="7" placeholder="현재 겪고 있는 문제점과 이 안건을 통해 학교가 어떻게 바뀌면 좋을지 구체적으로 작성해 주세요." class="w-full text-sm border border-stone-200 rounded-xl p-3.5 bg-stone-50/50 hover:bg-white focus:bg-white focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none leading-relaxed transition"></textarea>
         </div>
 
         <div class="p-3.5 bg-stone-50 rounded-xl border border-stone-200/80">
@@ -160,7 +223,7 @@
           <p class="text-[11px] text-stone-400">※ 우측 [전문 확인]을 열람하신 후 동의 체크가 가능합니다.</p>
         </div>
 
-        <!-- 턴스타일 위젯: light 모드로 흰 바탕과 완전 융화 -->
+        <!-- 턴스타일 위젯 -->
         <div class="flex justify-center pt-1 min-h-[65px]">
           <div id="turnstileWidget"></div>
         </div>
@@ -220,6 +283,9 @@
 
     let currentUser = null;
     let agendas = [];
+    let currentFilter = "all";
+    let expandedAgendaIds = new Set(); // 더보기 펼침 상태 유지용
+    let votedAgendas = JSON.parse(localStorage.getItem("voted_agendas") || "[]");
     let toastTimeout = null;
     let isCaptchaVerified = false;
     let turnstileWidgetId = null;
@@ -256,14 +322,24 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
+      initDraftSystem();
       fetchAgendas(true);
 
+      // 화면을 보고 있을 때만 10초 폴링 (서버 부하 감소)
       setInterval(() => {
-        if (isPollingActive) {
+        if (isPollingActive && document.visibilityState === 'visible') {
           fetchAgendas(false);
         }
       }, 10000);
 
+      // 탭 복귀 시 즉시 최신 데이터 동기화
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && isPollingActive) {
+          fetchAgendas(false);
+        }
+      });
+
+      // 스크롤 탑 버튼 제어
       const scrollTopBtn = document.getElementById("scrollTopBtn");
       window.addEventListener("scroll", () => {
         if (window.scrollY > 300) {
@@ -275,16 +351,63 @@
         }
       });
 
-      document.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
+      // ESC 키로 모달 닫기 지원
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          const privacyModal = document.getElementById("privacyDetailModal");
+          const proposalModal = document.getElementById("proposalModal");
+          if (!privacyModal.classList.contains("hidden")) {
+            privacyModal.classList.add("hidden");
+          } else if (!proposalModal.classList.contains("hidden")) {
+            closeProposalModal();
+          }
+        }
       });
+
+      document.addEventListener('contextmenu', (e) => e.preventDefault());
     });
 
-    function scrollToTop() {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth"
+    // 임시저장 및 실시간 글자 수 카운터 초기화
+    function initDraftSystem() {
+      const fields = ['userRole', 'agendaTitle', 'agendaContent'];
+      let hasSavedDraft = false;
+
+      fields.forEach(id => {
+        const el = document.getElementById(id);
+        const saved = localStorage.getItem(`draft_${id}`);
+        if (saved) {
+          el.value = saved;
+          hasSavedDraft = true;
+        }
+        el.addEventListener('input', (e) => {
+          localStorage.setItem(`draft_${id}`, e.target.value);
+          document.getElementById("draftBadge").classList.remove("hidden");
+          updateCharCounters();
+        });
       });
+
+      if (hasSavedDraft) {
+        document.getElementById("draftBadge").classList.remove("hidden");
+      }
+      updateCharCounters();
+    }
+
+    function updateCharCounters() {
+      const titleLen = document.getElementById("agendaTitle").value.length;
+      const contentLen = document.getElementById("agendaContent").value.length;
+      document.getElementById("titleCounter").innerText = `${titleLen} / 60자`;
+      document.getElementById("contentCounter").innerText = `${contentLen} / 1000자`;
+    }
+
+    function clearDrafts() {
+      ['userRole', 'agendaTitle', 'agendaContent'].forEach(id => localStorage.removeItem(`draft_${id}`));
+      document.getElementById("proposalForm").reset();
+      document.getElementById("draftBadge").classList.add("hidden");
+      updateCharCounters();
+    }
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     window.onload = function() {
@@ -325,8 +448,41 @@
       return JSON.parse(jsonPayload);
     }
 
-    async function fetchAgendas(isInitial = false) {
+    // 카테고리 탭 변경
+    function setFilter(filterType) {
+      currentFilter = filterType;
+      document.querySelectorAll(".filter-btn").forEach(btn => {
+        if (btn.dataset.filter === filterType) {
+          btn.className = "filter-btn shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg bg-stone-900 text-white transition flex items-center gap-1";
+        } else {
+          btn.className = "filter-btn shrink-0 text-xs font-medium px-3 py-1.5 rounded-lg bg-stone-100 text-stone-600 hover:bg-stone-200/70 transition flex items-center gap-1";
+        }
+      });
+      renderAgendas();
+    }
+
+    function clearSearch() {
+      const input = document.getElementById("searchInput");
+      input.value = "";
+      renderAgendas();
+      input.focus();
+    }
+
+    function toggleExpand(id) {
+      const strId = String(id);
+      if (expandedAgendaIds.has(strId)) {
+        expandedAgendaIds.delete(strId);
+      } else {
+        expandedAgendaIds.add(strId);
+      }
+      renderAgendas();
+    }
+
+    async function fetchAgendas(isInitial = false, isManual = false) {
       const listEl = document.getElementById("agendaList");
+      const refreshIcon = document.getElementById("refreshIcon");
+      if (isManual && refreshIcon) refreshIcon.classList.add("animate-spin");
+
       try {
         const res = await fetch(GAS_ENDPOINT_URL);
         const result = await res.json();
@@ -336,51 +492,119 @@
             agendas = newAgendas;
             renderAgendas();
           }
+          if (isManual) showToast("최신 안건 목록으로 갱신되었습니다.");
         }
       } catch (err) {
         if (isInitial) {
           listEl.innerHTML = `<div class="text-center py-12 bg-white/70 border border-stone-200 rounded-2xl text-stone-500 text-sm">데이터를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.</div>`;
+        }
+      } finally {
+        if (isManual && refreshIcon) {
+          setTimeout(() => refreshIcon.classList.remove("animate-spin"), 400);
         }
       }
     }
 
     function renderAgendas() {
       const listEl = document.getElementById("agendaList");
-      document.getElementById("totalCount").innerText = agendas.length;
+      const searchQuery = document.getElementById("searchInput").value.trim().toLowerCase();
+      const sortOrder = document.getElementById("sortOrder").value;
+      const clearBtn = document.getElementById("clearSearchBtn");
 
-      if (agendas.length === 0) {
-        listEl.innerHTML = `<div class="text-center py-12 bg-white/70 border border-stone-200 rounded-2xl text-stone-400 text-sm">등록된 안건이 아직 없습니다. 첫 번째 안건을 제안해 보세요!</div>`;
+      if (searchQuery.length > 0) {
+        clearBtn.classList.remove("hidden");
+      } else {
+        clearBtn.classList.add("hidden");
+      }
+
+      // 1. 필터 및 검색 적용
+      let filtered = agendas.filter(item => {
+        const matchesRole = 
+          currentFilter === "all" ? true :
+          currentFilter === "qualified" ? Number(item.likes) >= 10 :
+          String(item.role) === currentFilter;
+
+        const titleStr = String(item.title ?? "").toLowerCase();
+        const contentStr = String(item.content ?? "").toLowerCase();
+        const matchesSearch = !searchQuery || titleStr.includes(searchQuery) || contentStr.includes(searchQuery);
+
+        return matchesRole && matchesSearch;
+      });
+
+      // 2. 정렬 적용
+      if (sortOrder === "popular") {
+        filtered.sort((a, b) => Number(b.likes) - Number(a.likes));
+      }
+
+      document.getElementById("totalCount").innerText = filtered.length;
+
+      if (filtered.length === 0) {
+        const emptyMsg = agendas.length === 0 
+          ? "등록된 안건이 아직 없습니다. 첫 번째 안건을 제안해 보세요!" 
+          : "조건에 맞는 안건이 없습니다. 검색어나 필터를 변경해 보세요.";
+        listEl.innerHTML = `<div class="text-center py-12 bg-white/70 border border-stone-200 rounded-2xl text-stone-400 text-sm">${emptyMsg}</div>`;
         return;
       }
 
-      listEl.innerHTML = agendas.map(item => `
-        <div class="bg-white border border-stone-200/90 rounded-2xl p-5 shadow-xs hover:border-stone-300 transition-all">
-          <div class="flex items-start justify-between gap-4">
-            <div class="space-y-2 flex-1">
-              <div class="flex items-center gap-2">
-                <span class="text-[11px] font-semibold bg-stone-100 text-stone-600 px-2.5 py-0.5 rounded-md">${item.role}</span>
-                <span class="text-xs text-stone-400">${String(item.timestamp).slice(0, 10)}</span>
+      listEl.innerHTML = filtered.map(item => {
+        const itemIdStr = String(item.id);
+        const likesNum = Number(item.likes) || 0;
+        const isVoted = votedAgendas.includes(itemIdStr);
+        const isQualified = likesNum >= 10;
+        const progressPercent = Math.min(100, Math.round((likesNum / 10) * 100));
+        
+        const contentText = String(item.content ?? "");
+        const isLongContent = contentText.length > 140 || contentText.split('\n').length > 3;
+        const isExpanded = expandedAgendaIds.has(itemIdStr);
+
+        return `
+          <div class="bg-white border ${isQualified ? 'border-emerald-400/90 ring-1 ring-emerald-500/10' : 'border-stone-200/90'} rounded-2xl p-5 shadow-xs hover:border-stone-300 transition-all">
+            <div class="flex items-start justify-between gap-4">
+              <div class="space-y-2 flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="text-[11px] font-semibold bg-stone-100 text-stone-600 px-2.5 py-0.5 rounded-md">${escapeHtml(item.role)}</span>
+                  ${isQualified ? `<span class="text-[11px] font-semibold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md flex items-center gap-1"><i data-lucide="check-circle" class="w-3 h-3"></i>검토 상정 대상</span>` : ''}
+                  <span class="text-xs text-stone-400">${String(item.timestamp).slice(0, 10)}</span>
+                </div>
+                <h3 class="text-base font-bold text-stone-900 tracking-tight leading-snug break-words">${escapeHtml(item.title)}</h3>
+                <p class="text-sm text-stone-600 whitespace-pre-line leading-relaxed break-words ${isLongContent && !isExpanded ? 'line-clamp-3' : ''}">${escapeHtml(contentText)}</p>
+                ${isLongContent ? `
+                  <button onclick="toggleExpand('${itemIdStr}')" class="text-xs font-semibold text-emerald-700 hover:text-emerald-800 pt-0.5 flex items-center gap-0.5">
+                    <span>${isExpanded ? '접기' : '전체 보기'}</span>
+                    <i data-lucide="${isExpanded ? 'chevron-up' : 'chevron-down'}" class="w-3.5 h-3.5"></i>
+                  </button>
+                ` : ''}
               </div>
-              <h3 class="text-base font-bold text-stone-900 tracking-tight leading-snug">${escapeHtml(item.title)}</h3>
-              <p class="text-sm text-stone-600 whitespace-pre-line leading-relaxed">${escapeHtml(item.content)}</p>
+
+              <button onclick="likeAgenda('${itemIdStr}', this)" class="flex flex-col items-center justify-center min-w-[56px] h-[56px] border rounded-xl transition-all group shrink-0 ${isVoted ? 'bg-emerald-700 text-white border-emerald-700 shadow-xs' : 'border-stone-200 bg-stone-50/70 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 text-stone-600'}">
+                <i data-lucide="thumbs-up" class="w-4 h-4 mb-0.5 group-hover:scale-110 transition-transform"></i>
+                <span class="text-xs font-bold like-num">${likesNum}</span>
+              </button>
             </div>
-            <button onclick="likeAgenda('${item.id}', this)" class="flex flex-col items-center justify-center min-w-[54px] h-[54px] border border-stone-200 bg-stone-50/70 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 rounded-xl text-stone-600 transition-all group">
-              <i data-lucide="thumbs-up" class="w-4 h-4 mb-0.5 group-hover:scale-110 transition-transform"></i>
-              <span class="text-xs font-bold like-num">${item.likes}</span>
-            </button>
+
+            <!-- 상정 기준 달성 프로그레스 바 -->
+            <div class="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between gap-3">
+              <div class="flex-1 bg-stone-100 h-1.5 rounded-full overflow-hidden">
+                <div class="h-full ${isQualified ? 'bg-emerald-600' : 'bg-emerald-500/70'} transition-all duration-500" style="width: ${progressPercent}%"></div>
+              </div>
+              <span class="text-[11px] font-medium ${isQualified ? 'text-emerald-700 font-semibold' : 'text-stone-400'} shrink-0">
+                ${isQualified ? '상정 기준 달성 완료' : `상정까지 ${10 - likesNum}공감 남음`}
+              </span>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
       lucide.createIcons();
     }
 
     async function likeAgenda(id, btnElement) {
-      const numSpan = btnElement.querySelector('.like-num');
+      const strId = String(id);
       btnElement.disabled = true;
 
       try {
         const res = await fetch(GAS_ENDPOINT_URL, {
           method: 'POST',
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({ 
             action: "like", 
             id: id,
@@ -389,11 +613,21 @@
         });
         const result = await res.json();
         if (result.status === "success") {
-          numSpan.innerText = result.newLikes;
-          btnElement.classList.add('bg-emerald-700', 'text-white', 'border-emerald-700');
-          btnElement.classList.remove('bg-stone-50/70', 'text-stone-600', 'border-stone-200');
+          if (!votedAgendas.includes(strId)) {
+            votedAgendas.push(strId);
+            localStorage.setItem("voted_agendas", JSON.stringify(votedAgendas));
+          }
+          // 로컬 데이터 즉시 갱신 후 리렌더링 (배지 및 진행률 바 즉시 반영)
+          const target = agendas.find(a => String(a.id) === strId);
+          if (target) target.likes = result.newLikes;
+          renderAgendas();
           showToast("공감이 반영되었습니다!");
         } else if (result.status === "already_voted") {
+          if (!votedAgendas.includes(strId)) {
+            votedAgendas.push(strId);
+            localStorage.setItem("voted_agendas", JSON.stringify(votedAgendas));
+          }
+          renderAgendas();
           showToast("이미 공감에 참여한 안건입니다.", "warn");
         }
       } catch (err) {
@@ -409,7 +643,9 @@
       document.body.style.overflow = "hidden";
 
       if (window.turnstile) {
-        document.getElementById("turnstileWidget").innerHTML = "";
+        if (turnstileWidgetId !== null) {
+          turnstile.remove(turnstileWidgetId);
+        }
         turnstileWidgetId = turnstile.render('#turnstileWidget', {
           sitekey: TURNSTILE_SITE_KEY,
           theme: 'light',
@@ -432,13 +668,13 @@
     function closeProposalModal() {
       document.getElementById("proposalModal").classList.add("hidden");
       document.body.style.overflow = "auto";
-      document.getElementById("proposalForm").reset();
       const chk = document.getElementById("privacyConsent");
       chk.checked = false;
       chk.disabled = true;
       isCaptchaVerified = false;
       if (window.turnstile && turnstileWidgetId !== null) {
-        turnstile.reset(turnstileWidgetId);
+        turnstile.remove(turnstileWidgetId);
+        turnstileWidgetId = null;
       }
       isPollingActive = true;
     }
@@ -457,6 +693,16 @@
 
     async function submitAgenda(e) {
       e.preventDefault();
+
+      const role = document.getElementById("userRole").value;
+      const title = document.getElementById("agendaTitle").value.trim();
+      const content = document.getElementById("agendaContent").value.trim();
+
+      if (!title || !content) {
+        showToast("제목과 내용을 공백 없이 입력해 주세요.", "warn");
+        return;
+      }
+
       const consentChk = document.getElementById("privacyConsent");
       if (!consentChk.checked) {
         showToast("약관 [전문 확인]을 열람하고 동의해 주세요.", "warn");
@@ -475,9 +721,9 @@
         action: "create",
         userEmail: currentUser ? currentUser.email : "anonymous@school.internal",
         userName: currentUser ? currentUser.name : "익명 제안자",
-        role: document.getElementById("userRole").value,
-        title: document.getElementById("agendaTitle").value,
-        content: document.getElementById("agendaContent").value
+        role: role,
+        title: title,
+        content: content
       };
 
       const startTime = Date.now();
@@ -490,11 +736,13 @@
         try {
           const res = await fetch(GAS_ENDPOINT_URL, {
             method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify(payload)
           });
           const result = await res.json();
 
           if (result.status === "success") {
+            clearDrafts();
             closeProposalModal();
             fetchAgendas(false);
             submitBtn.disabled = false;
@@ -518,7 +766,7 @@
     }
 
     function escapeHtml(text) {
-      return text
+      return String(text ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
