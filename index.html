@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>학교 정기토론 안건 플랫폼</title>
+  <meta name="description" content="학생·학부모·교직원이 함께 참여하는 공식 정기토론 안건 제안 및 공감 플랫폼입니다.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="학교 정기토론 안건 플랫폼">
+  <meta property="og:description" content="학생과 학부모가 직접 참여하는 학교 토론 안건 수렴 공간">
+  
+  <!-- 스타일 및 아이콘 CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    input, textarea {
+      -webkit-user-select: auto;
+      user-select: auto;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between">
+
+  <!-- 헤더 -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i data-lucide="message-square-quote" class="text-blue-600"></i>
+        <span class="font-bold text-lg text-slate-900 tracking-tight">정기토론 안건 플랫폼</span>
+      </div>
+      <div id="authArea" class="flex items-center gap-3">
+        <div id="googleBtn"></div>
+        <div id="userInfo" class="hidden flex items-center gap-2 text-sm">
+          <span id="userNameDisplay" class="font-medium text-slate-700"></span>
+          <button onclick="handleLogout()" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1 rounded">로그아웃</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 메인 -->
+  <main class="max-w-4xl mx-auto px-4 py-8 w-full flex-grow">
+    <div class="bg-white border border-slate-200 rounded-xl p-6 mb-8 shadow-sm">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 class="text-xl font-bold text-slate-900 mb-1">우리 학교를 바꾸는 토론 안건 제안</h1>
+          <p class="text-sm text-slate-500">공감 수 10개 이상을 달성한 안건은 운영위원회 검토 대상에 상정됩니다.</p>
+        </div>
+        <button onclick="openProposalModal()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-lg flex items-center justify-center gap-2 transition">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          안건 제안하기
+        </button>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+        <span>현재 접수된 안건</span>
+        <span id="totalCount" class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">0</span>
+      </h2>
+      <button onclick="fetchAgendas()" class="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1">
+        <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i> 새로고침
+      </button>
+    </div>
+
+    <div id="agendaList" class="space-y-4">
+      <div class="text-center py-16 text-slate-400 bg-white border border-slate-200 rounded-xl">
+        <i data-lucide="loader" class="w-6 h-6 animate-spin mx-auto mb-2"></i>
+        안건 데이터를 불러오고 있습니다...
+      </div>
+    </div>
+  </main>
+
+  <!-- 안건 제안 모달 -->
+  <div id="proposalModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-lg w-full overflow-hidden border border-slate-200">
+      <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+        <h3 class="font-bold text-slate-900">새 안건 제안하기</h3>
+        <button onclick="closeProposalModal()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      
+      <form id="proposalForm" onsubmit="submitAgenda(event)" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">제안자 소속 (필수)</label>
+          <select id="userRole" required class="w-full text-sm border border-slate-300 rounded-lg p-2.5 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+            <option value="">선택해 주세요</option>
+            <option value="학생">재학생</option>
+            <option value="학부모">학부모</option>
+            <option value="교직원">교직원</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">안건 제목 (필수)</label>
+          <input type="text" id="agendaTitle" required placeholder="예: 도서관 자습공간 개방 시간 연장의 건" class="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">제안 이유 및 세부 내용 (필수)</label>
+          <textarea id="agendaContent" required rows="4" placeholder="현재 문제점과 기대 효과를 구체적으로 작성해 주세요." class="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+        </div>
+
+        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+          <div class="flex items-center justify-between text-xs mb-1">
+            <div class="flex items-center gap-2">
+              <input type="checkbox" id="privacyConsent" disabled class="rounded border-slate-300 text-blue-600 cursor-not-allowed">
+              <label for="privacyConsent" class="font-medium text-slate-600">개인정보 수집 및 이용 동의 (필수)</label>
+            </div>
+            <button type="button" onclick="openPrivacyModal()" class="text-blue-600 hover:underline font-semibold flex items-center gap-0.5">
+              자세히 보기 <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-400">※ 우측 [자세히 보기]를 눌러 고지문을 확인해야 동의 체크가 가능합니다.</p>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeProposalModal()" class="w-1/2 py-2.5 border border-slate-300 text-slate-700 font-medium rounded-lg text-sm hover:bg-slate-50">취소</button>
+          <button type="submit" id="submitBtn" class="w-1/2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm transition">제출하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 약관 모달 -->
+  <div id="privacyDetailModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 text-sm">
+      <h4 class="font-bold text-slate-900 text-base mb-3 flex items-center gap-2">
+        <i data-lucide="shield-check" class="text-blue-600"></i>
+        개인정보 수집 및 이용 안내
+      </h4>
+      <div class="space-y-2 text-slate-600 leading-relaxed text-xs bg-slate-50 p-4 rounded-lg border border-slate-200 mb-4">
+        <p>• <strong>수집 및 이용 목적:</strong> 토론 안건 접수, 제안자 본인 확인, 검토 결과 안내</p>
+        <p>• <strong>수집 항목:</strong> 구글 프로필 이메일, 제안자 성명, 선택 소속(학생·학부모·교원)</p>
+        <p>• <strong>보유 및 이용 기간:</strong> 2026학년도 정기 토론회 종료 및 회의록 공시 시 즉시 파기</p>
+        <p class="text-slate-400 pt-1 border-t border-slate-200">※ 정보주체는 동의를 거부할 권리가 있습니다. 단, 동의를 거부할 시 안건 접수가 불가능합니다.</p>
+      </div>
+      <div class="text-right">
+        <button type="button" onclick="confirmPrivacyRead()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-xs">
+          내용을 확인하였으며 동의합니다
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 푸터 -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-500">
+    <div class="max-w-4xl mx-auto px-4 space-y-2">
+      <p class="font-bold text-slate-700">© 2026 이우중학교 정기토론 기획단. All rights reserved.</p>
+      <p class="text-[11px] text-slate-400 leading-relaxed max-w-2xl mx-auto">
+        본 시스템의 소스코드, UI 설계 및 토론 기록물은 저작권법의 보호를 받습니다.<br>
+        본 사이트의 데이터는 <strong>교내 커뮤니티 전용</strong>으로 이용이 허락되어 있으며, 
+        사전 동의 없는 <strong>무단 복제, 2차 가공, 외부 커뮤니티 유출을 엄격히 금지</strong>합니다.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // ==========================================
+    // 1. 핵심 환경 설정
+    // ==========================================
+    const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
+    const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbzsJCugz19a3ckh4Ek2kNCF_QxQA7vcAT4deE196v6fujRyH7-8HqAnGwGK6K5Js1whbQ/exec";
+
+    let currentUser = null;
+    let agendas = [];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      fetchAgendas();
+
+      // 마우스 우클릭 금지
+      document.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+      });
+    });
+
+    // 구글 로그인 초기화
+    window.onload = function() {
+      if (typeof google !== "undefined" && GOOGLE_CLIENT_ID !== "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com") {
+        google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleCredentialResponse
+        });
+        google.accounts.id.renderButton(
+          document.getElementById("googleBtn"),
+          { theme: "outline", size: "medium", shape: "pill" }
+        );
+      }
+    };
+
+    function handleGoogleCredentialResponse(response) {
+      const payload = parseJwt(response.credential);
+      currentUser = { email: payload.email, name: payload.name };
+      document.getElementById("googleBtn").classList.add("hidden");
+      document.getElementById("userInfo").classList.remove("hidden");
+      document.getElementById("userNameDisplay").innerText = `${currentUser.name} 님`;
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      document.getElementById("userInfo").classList.add("hidden");
+      document.getElementById("googleBtn").classList.remove("hidden");
+    }
+
+    function parseJwt(token) {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      return JSON.parse(jsonPayload);
+    }
+
+    // 안건 목록 로드
+    async function fetchAgendas() {
+      const listEl = document.getElementById("agendaList");
+      try {
+        const res = await fetch(GAS_ENDPOINT_URL);
+        const result = await res.json();
+        if (result.status === "success") {
+          agendas = result.data.reverse();
+          renderAgendas();
+        }
+      } catch (err) {
+        listEl.innerHTML = `<div class="text-center py-12 bg-white border border-slate-200 rounded-xl text-slate-500 text-sm">데이터를 불러오지 못했습니다. GAS 배포 URL을 확인해 주세요.</div>`;
+      }
+    }
+
+    function renderAgendas() {
+      const listEl = document.getElementById("agendaList");
+      document.getElementById("totalCount").innerText = agendas.length;
+
+      if (agendas.length === 0) {
+        listEl.innerHTML = `<div class="text-center py-12 bg-white border border-slate-200 rounded-xl text-slate-400 text-sm">등록된 안건이 아직 없습니다. 첫 번째 안건을 제안해 보세요!</div>`;
+        return;
+      }
+
+      listEl.innerHTML = agendas.map(item => `
+        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-slate-300 transition">
+          <div class="flex items-start justify-between gap-4">
+            <div class="space-y-1.5 flex-1">
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded">${item.role}</span>
+                <span class="text-xs text-slate-400">${String(item.timestamp).slice(0, 10)}</span>
+              </div>
+              <h3 class="text-base font-bold text-slate-900">${escapeHtml(item.title)}</h3>
+              <p class="text-sm text-slate-600 whitespace-pre-line leading-relaxed">${escapeHtml(item.content)}</p>
+            </div>
+            <button onclick="likeAgenda('${item.id}', this)" class="flex flex-col items-center justify-center min-w-[52px] h-[52px] border border-blue-200 bg-blue-50/50 hover:bg-blue-100 rounded-lg text-blue-700 transition">
+              <i data-lucide="thumbs-up" class="w-4 h-4 mb-0.5"></i>
+              <span class="text-xs font-bold like-num">${item.likes}</span>
+            </button>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    // 공감 투표
+    async function likeAgenda(id, btnElement) {
+      const numSpan = btnElement.querySelector('.like-num');
+      btnElement.disabled = true;
+
+      try {
+        const res = await fetch(GAS_ENDPOINT_URL, {
+          method: 'POST',
+          body: JSON.stringify({ 
+            action: "like", 
+            id: id,
+            userEmail: currentUser ? currentUser.email : "guest_device"
+          })
+        });
+        const result = await res.json();
+        if (result.status === "success") {
+          numSpan.innerText = result.newLikes;
+          btnElement.classList.add('bg-blue-600', 'text-white');
+          btnElement.classList.remove('bg-blue-50/50', 'text-blue-700');
+        } else if (result.status === "already_voted") {
+          alert(result.message);
+        }
+      } catch (err) {
+        alert("통신 중 오류가 발생했습니다.");
+      } finally {
+        btnElement.disabled = false;
+      }
+    }
+
+    // 제안 모달 및 약관
+    function openProposalModal() {
+      document.getElementById("proposalModal").classList.remove("hidden");
+    }
+
+    function closeProposalModal() {
+      document.getElementById("proposalModal").classList.add("hidden");
+      document.getElementById("proposalForm").reset();
+      const chk = document.getElementById("privacyConsent");
+      chk.checked = false;
+      chk.disabled = true;
+    }
+
+    function openPrivacyModal() {
+      document.getElementById("privacyDetailModal").classList.remove("hidden");
+    }
+
+    function confirmPrivacyRead() {
+      const consentChk = document.getElementById("privacyConsent");
+      consentChk.disabled = false;
+      consentChk.checked = true;
+      document.getElementById("privacyDetailModal").classList.add("hidden");
+    }
+
+    // 안건 제출
+    async function submitAgenda(e) {
+      e.preventDefault();
+      const consentChk = document.getElementById("privacyConsent");
+      if (!consentChk.checked) {
+        alert("개인정보 수집 및 이용 고지문을 확인하고 동의해야 제출할 수 있습니다.");
+        return;
+      }
+
+      const submitBtn = document.getElementById("submitBtn");
+      submitBtn.disabled = true;
+
+      const payload = {
+        action: "create",
+        userEmail: currentUser ? currentUser.email : "anonymous@school.internal",
+        userName: currentUser ? currentUser.name : "익명 제안자",
+        role: document.getElementById("userRole").value,
+        title: document.getElementById("agendaTitle").value,
+        content: document.getElementById("agendaContent").value
+      };
+
+      const startTime = Date.now();
+      const MAX_WAIT_MS = 30000;
+
+      while (Date.now() - startTime < MAX_WAIT_MS) {
+        const elapsedSec = Math.floor((Date.now() - startTime) / 1000);
+        submitBtn.innerText = `등록 중... (${elapsedSec}초)`;
+
+        try {
+          const res = await fetch(GAS_ENDPOINT_URL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+          });
+          const result = await res.json();
+
+          if (result.status === "success") {
+            alert("안건이 안전하게 등록되었습니다.");
+            closeProposalModal();
+            fetchAgendas();
+            submitBtn.disabled = false;
+            submitBtn.innerText = "제출하기";
+            return;
+          } else if (result.status === "busy") {
+            await new Promise(r => setTimeout(r, 2000));
+          } else {
+            alert("저장 오류: " + result.message);
+            break;
+          }
+        } catch (err) {
+          await new Promise(r => setTimeout(r, 2000));
+        }
+      }
+
+      alert("현재 동시 접속자가 많아 지연되고 있습니다. 잠시 후 다시 시도해 주세요.");
+      submitBtn.disabled = false;
+      submitBtn.innerText = "제출하기";
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
