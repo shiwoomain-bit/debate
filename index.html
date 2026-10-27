@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
@@ -273,7 +273,6 @@
 
   <script>
     const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
-    // 새롭게 발급받은 GAS 웹 앱 URL 적용 완료
     const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxdoNClr6idmcK0d1MImrIWaPQRhJiM9G2Mr9hYUG1J0X9YAqDW6nvgJUVvS4aPLT8o_Q/exec";
     const TURNSTILE_SITE_KEY = "0x4AAAAAAFoRUbpteTboq6Il";
 
@@ -321,7 +320,6 @@
       initDraftSystem();
       fetchAgendas(true);
 
-      // 30초 폴링으로 서버 부하 최소화
       setInterval(() => {
         if (isPollingActive && document.visibilityState === 'visible') {
           fetchAgendas(false);
@@ -472,7 +470,11 @@
     async function fetchAgendas(isInitial = false, isManual = false) {
       const listEl = document.getElementById("agendaList");
       const refreshIcon = document.getElementById("refreshIcon");
-      if (isManual && refreshIcon) refreshIcon.classList.add("animate-spin");
+      
+      if (isManual && refreshIcon) {
+        if (refreshIcon.classList.contains("animate-spin")) return;
+        refreshIcon.classList.add("animate-spin");
+      }
 
       try {
         const res = await fetch(GAS_ENDPOINT_URL);
@@ -491,7 +493,9 @@
         }
       } finally {
         if (isManual && refreshIcon) {
-          setTimeout(() => refreshIcon.classList.remove("animate-spin"), 400);
+          setTimeout(() => {
+            refreshIcon.classList.remove("animate-spin");
+          }, 500);
         }
       }
     }
