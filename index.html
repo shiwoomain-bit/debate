@@ -79,21 +79,27 @@
     </div>
   </main>
 
-  <!-- 안건 제안 모달 -->
-  <div id="proposalModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-xl max-w-lg w-full overflow-hidden border border-slate-200">
-      <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-        <h3 class="font-bold text-slate-900">새 안건 제안하기</h3>
-        <button onclick="closeProposalModal()" class="text-slate-400 hover:text-slate-600">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+  <!-- 안건 제안 전체 화면(Full-screen) 창 -->
+  <div id="proposalModal" class="fixed inset-0 bg-slate-50 z-50 hidden flex flex-col">
+    <!-- 전체화면 헤더 -->
+    <div class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center shadow-sm">
+      <div class="flex items-center gap-2">
+        <i data-lucide="edit-3" class="w-5 h-5 text-blue-600"></i>
+        <h3 class="font-bold text-slate-900 text-lg">새 안건 제안하기</h3>
       </div>
-      
-      <form id="proposalForm" onsubmit="submitAgenda(event)" class="p-6 space-y-4">
+      <button onclick="closeProposalModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+    </div>
+    
+    <!-- 전체화면 폼 본문 (스크롤 지원) -->
+    <div class="flex-1 overflow-y-auto p-4 sm:p-8 flex justify-center">
+      <form id="proposalForm" onsubmit="submitAgenda(event)" class="w-full max-w-2xl bg-white p-6 sm:p-10 rounded-2xl border border-slate-200 shadow-sm space-y-6 my-auto">
+        
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">제안자 소속 (필수)</label>
-          <select id="userRole" required class="w-full text-sm border border-slate-300 rounded-lg p-2.5 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-            <option value="">선택해 주세요</option>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">제안자 소속 <span class="text-red-500">*</span></label>
+          <select id="userRole" required class="w-full text-sm border border-slate-300 rounded-xl p-3 bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+            <option value="">소속을 선택해 주세요</option>
             <option value="학생">재학생</option>
             <option value="학부모">학부모</option>
             <option value="교직원">교직원</option>
@@ -101,37 +107,39 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">안건 제목 (필수)</label>
-          <input type="text" id="agendaTitle" required placeholder="예: 도서관 자습공간 개방 시간 연장의 건" class="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+          <label class="block text-sm font-semibold text-slate-700 mb-2">안건 제목 <span class="text-red-500">*</span></label>
+          <input type="text" id="agendaTitle" required placeholder="예: 도서관 자습공간 개방 시간 연장의 건" class="w-full text-sm border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none">
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">제안 이유 및 세부 내용 (필수)</label>
-          <textarea id="agendaContent" required rows="4" placeholder="현재 문제점과 기대 효과를 구체적으로 작성해 주세요." class="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">제안 이유 및 세부 내용 <span class="text-red-500">*</span></label>
+          <textarea id="agendaContent" required rows="8" placeholder="현재 불편한 점이나 문제점, 그리고 안건이 통과되었을 때 기대되는 변화를 자유롭고 구체적으로 적어주세요." class="w-full text-sm border border-slate-300 rounded-xl p-3.5 focus:ring-2 focus:ring-blue-500 outline-none leading-relaxed"></textarea>
         </div>
 
-        <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-          <div class="flex items-center justify-between text-xs mb-1">
+        <!-- 개인정보 수집 동의 -->
+        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <div class="flex items-center justify-between text-xs sm:text-sm mb-1.5">
             <div class="flex items-center gap-2">
-              <input type="checkbox" id="privacyConsent" disabled class="rounded border-slate-300 text-blue-600 cursor-not-allowed">
-              <label for="privacyConsent" class="font-medium text-slate-600">개인정보 수집 및 이용 동의 (필수)</label>
+              <input type="checkbox" id="privacyConsent" disabled class="w-4 h-4 rounded border-slate-300 text-blue-600 cursor-not-allowed">
+              <label for="privacyConsent" class="font-medium text-slate-700">개인정보 수집 및 이용 동의 (필수)</label>
             </div>
             <button type="button" onclick="openPrivacyModal()" class="text-blue-600 hover:underline font-semibold flex items-center gap-0.5">
-              자세히 보기 <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+              자세히 보기 <i data-lucide="chevron-right" class="w-4 h-4"></i>
             </button>
           </div>
-          <p class="text-[11px] text-slate-400">※ 우측 [자세히 보기]를 눌러 고지문을 확인해야 동의 체크가 가능합니다.</p>
+          <p class="text-xs text-slate-400">※ 우측 [자세히 보기]를 눌러 고지문을 확인하면 체크할 수 있습니다.</p>
         </div>
 
-        <div class="flex gap-2 pt-2">
-          <button type="button" onclick="closeProposalModal()" class="w-1/2 py-2.5 border border-slate-300 text-slate-700 font-medium rounded-lg text-sm hover:bg-slate-50">취소</button>
-          <button type="submit" id="submitBtn" class="w-1/2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm transition">제출하기</button>
+        <!-- 버튼 영역 -->
+        <div class="flex gap-3 pt-3">
+          <button type="button" onclick="closeProposalModal()" class="w-1/3 py-3 border border-slate-300 text-slate-700 font-medium rounded-xl text-sm hover:bg-slate-50 transition">닫기</button>
+          <button type="submit" id="submitBtn" class="w-2/3 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl text-sm transition shadow-sm">제출하기</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- 약관 모달 -->
+  <!-- 개인정보 약관 모달 -->
   <div id="privacyDetailModal" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 text-sm">
       <h4 class="font-bold text-slate-900 text-base mb-3 flex items-center gap-2">
@@ -232,7 +240,7 @@
           renderAgendas();
         }
       } catch (err) {
-        listEl.innerHTML = `<div class="text-center py-12 bg-white border border-slate-200 rounded-xl text-slate-500 text-sm">데이터를 불러오지 못했습니다. GAS 배포 URL을 확인해 주세요.</div>`;
+        listEl.innerHTML = `<div class="text-center py-12 bg-white border border-slate-200 rounded-xl text-slate-500 text-sm">데이터를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.</div>`;
       }
     }
 
@@ -286,7 +294,7 @@
           btnElement.classList.add('bg-blue-600', 'text-white');
           btnElement.classList.remove('bg-blue-50/50', 'text-blue-700');
         } else if (result.status === "already_voted") {
-          alert(result.message);
+          alert("이미 공감 투표에 참여한 안건입니다.");
         }
       } catch (err) {
         alert("통신 중 오류가 발생했습니다.");
@@ -295,13 +303,15 @@
       }
     }
 
-    // 제안 모달 및 약관
+    // 제안 모달 열기/닫기
     function openProposalModal() {
       document.getElementById("proposalModal").classList.remove("hidden");
+      document.body.style.overflow = "hidden"; // 배경 스크롤 방지
     }
 
     function closeProposalModal() {
       document.getElementById("proposalModal").classList.add("hidden");
+      document.body.style.overflow = "auto";
       document.getElementById("proposalForm").reset();
       const chk = document.getElementById("privacyConsent");
       chk.checked = false;
@@ -324,7 +334,7 @@
       e.preventDefault();
       const consentChk = document.getElementById("privacyConsent");
       if (!consentChk.checked) {
-        alert("개인정보 수집 및 이용 고지문을 확인하고 동의해야 제출할 수 있습니다.");
+        alert("개인정보 수집 및 이용 내용을 확인하고 동의해야 제출할 수 있습니다.");
         return;
       }
 
@@ -345,7 +355,7 @@
 
       while (Date.now() - startTime < MAX_WAIT_MS) {
         const elapsedSec = Math.floor((Date.now() - startTime) / 1000);
-        submitBtn.innerText = `등록 중... (${elapsedSec}초)`;
+        submitBtn.innerText = `접수 중... (${elapsedSec}초)`;
 
         try {
           const res = await fetch(GAS_ENDPOINT_URL, {
@@ -355,7 +365,7 @@
           const result = await res.json();
 
           if (result.status === "success") {
-            alert("안건이 안전하게 등록되었습니다.");
+            alert("안건이 정상적으로 접수되었습니다. 함께 검토할게요!");
             closeProposalModal();
             fetchAgendas();
             submitBtn.disabled = false;
@@ -372,7 +382,7 @@
         }
       }
 
-      alert("현재 동시 접속자가 많아 지연되고 있습니다. 잠시 후 다시 시도해 주세요.");
+      alert("접속자가 많아 잠시 지연되고 있습니다. 잠시 후 다시 시도해 주세요.");
       submitBtn.disabled = false;
       submitBtn.innerText = "제출하기";
     }
