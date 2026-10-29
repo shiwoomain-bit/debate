@@ -49,8 +49,21 @@
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
+    /* 턴스타일 위젯 가로 폭 100% 밀착 및 정렬 수정 */
+    #turnstileWidget {
+      width: 100% !important;
+      display: flex !important;
+      justify-content: center !important;
+    }
+    #turnstileWidget > div {
+      width: 100% !important;
+      max-width: 100% !important;
+      display: flex !important;
+      justify-content: center !important;
+    }
     #turnstileWidget iframe {
-      margin: 0 auto;
+      margin: 0 auto !important;
+      max-width: 100% !important;
     }
   </style>
 </head>
@@ -126,7 +139,7 @@
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" id="filterTabs">
           <button onclick="setFilter('all')" data-filter="all" class="filter-btn shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg bg-stone-900 text-white transition">전체</button>
           <button onclick="setFilter('qualified')" data-filter="qualified" class="filter-btn shrink-0 text-xs font-medium px-3 py-1.5 rounded-lg bg-stone-100 text-stone-600 hover:bg-stone-200/70 transition flex items-center gap-1">
-            <span>상정 대상 (10+)</span>
+            <span>🔥 상정 대상 (10+)</span>
           </button>
           <button onclick="setFilter('학생')" data-filter="학생" class="filter-btn shrink-0 text-xs font-medium px-3 py-1.5 rounded-lg bg-stone-100 text-stone-600 hover:bg-stone-200/70 transition">재학생</button>
           <button onclick="setFilter('학부모')" data-filter="학부모" class="filter-btn shrink-0 text-xs font-medium px-3 py-1.5 rounded-lg bg-stone-100 text-stone-600 hover:bg-stone-200/70 transition">학부모</button>
@@ -261,8 +274,46 @@
   </button>
 
   <script>
-    // 🛠️ [점검 모드 스위치] 평소에는 false, 나중에 사이트를 점검 상태로 닫고 싶을 때만 true로 변경하세요!
+    // 🛠️ [점검 모드 스위치] 평소엔 false, 나중에 사이트를 점검 상태로 닫고 싶을 때만 true로 변경하세요!
     const IS_MAINTENANCE_MODE = false; 
+
+    // 점검 모드가 켜져있을 때 원래 화면이 깜빡하고 보이는 현상을 원천 차단하기 위해 즉시 실행
+    if (IS_MAINTENANCE_MODE) {
+      document.write(`
+        <!DOCTYPE html>
+        <html lang="ko">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>시스템 점검 중 - 학교 정기토론 안건 플랫폼</title>
+          <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+          <script src="https://cdn.tailwindcss.com"><\/script>
+          <script src="https://unpkg.com/lucide@latest"><\/script>
+          <style>body { font-family: "Pretendard Variable", Pretendard, sans-serif; letter-spacing: -0.025em; }</style>
+        </head>
+        <body class="bg-stone-100 text-stone-800 min-h-screen flex flex-col items-center justify-center p-6 text-center">
+          <div class="w-full max-w-md bg-white border border-stone-200 rounded-3xl p-8 shadow-sm space-y-5">
+            <div class="w-16 h-16 bg-emerald-50 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
+              <i data-lucide="wrench" class="w-8 h-8 animate-pulse"></i>
+            </div>
+            <div class="space-y-2">
+              <h1 class="text-xl font-bold text-stone-900 tracking-tight">시스템 점검 및 업데이트 중</h1>
+              <p class="text-sm text-stone-500 leading-relaxed">
+                더 안정적인 토론 플랫폼 제공을 위해<br>잠시 시스템 점검을 진행하고 있습니다.
+              </p>
+            </div>
+            <button onclick="location.reload()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-medium py-3 rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-2">
+              <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+              <span>새로고침하여 확인하기</span>
+            </button>
+          </div>
+          <script>lucide.createIcons();<\/script>
+        </body>
+        </html>
+      `);
+      document.close();
+      throw new Error("Maintenance Mode Active");
+    }
 
     const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
     const GAS_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbzsJCugz19a3ckh4Ek2kNCF_QxQA7vcAT4deE196v6fujRyH7-8HqAnGwGK6K5Js1whbQ/exec";
@@ -308,31 +359,6 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      // 점검 모드가 켜져있다면 화면 전체를 점검 안내창으로 대체합니다.
-      if (IS_MAINTENANCE_MODE) {
-        document.body.innerHTML = `
-          <div class="min-h-screen bg-stone-100 flex flex-col items-center justify-center p-6 text-center w-full">
-            <div class="w-full max-w-md bg-white border border-stone-200 rounded-3xl p-8 shadow-sm space-y-5">
-              <div class="w-16 h-16 bg-emerald-50 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
-                <i data-lucide="wrench" class="w-8 h-8 animate-pulse"></i>
-              </div>
-              <div class="space-y-2">
-                <h1 class="text-xl font-bold text-stone-900 tracking-tight">시스템 점검 및 업데이트 중</h1>
-                <p class="text-sm text-stone-500 leading-relaxed">
-                  더 안정적인 토론 플랫폼 제공을 위해<br>잠시 시스템 점검을 진행하고 있습니다.
-                </p>
-              </div>
-              <button onclick="location.reload()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-medium py-3 rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-2">
-                <i data-lucide="rotate-cw" class="w-4 h-4"></i>
-                <span>새로고침하여 확인하기</span>
-              </button>
-            </div>
-          </div>
-        `;
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-        return;
-      }
-
       lucide.createIcons();
       initDraftSystem();
       fetchAgendas(true);
