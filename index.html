@@ -195,7 +195,7 @@
         <div class="h-4 w-px bg-stone-200"></div>
         <h3 class="font-bold text-stone-900 text-base">새 안건 제안하기</h3>
         
-        <!-- 구글 문서 스타일의 실시간 저장 배지 (구름 안에 체크가 들어간 아이콘) -->
+        <!-- 구글 문서 스타일 실시간 저장 상태 -->
         <div id="saveStatus" class="hidden flex items-center gap-1 text-xs text-stone-500 font-normal transition-all ml-1">
           <span id="saveStatusIcon" class="flex items-center">
             <svg class="w-4 h-4 text-stone-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -263,12 +263,18 @@
     </div>
   </div>
 
+  <!-- 개인정보 약관 모달 -->
   <div id="privacyDetailModal" class="fixed inset-0 bg-stone-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-md shadow-xl max-w-md w-full p-5 text-xs sm:text-sm border border-stone-200">
-      <h4 class="font-bold text-stone-900 text-sm sm:text-base mb-2.5 flex items-center gap-2">
-        <i data-lucide="shield-check" class="text-emerald-700 w-4 h-4"></i>
-        개인정보 수집 및 이용 동의
-      </h4>
+      <div class="flex justify-between items-center mb-2.5">
+        <h4 class="font-bold text-stone-900 text-sm sm:text-base flex items-center gap-2">
+          <i data-lucide="shield-check" class="text-emerald-700 w-4 h-4"></i>
+          개인정보 수집 및 이용 동의
+        </h4>
+        <button type="button" onclick="closePrivacyModal()" class="text-stone-400 hover:text-stone-600 p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
       <div class="space-y-1.5 text-stone-600 leading-relaxed text-xs bg-stone-50 p-3 rounded-sm border border-stone-200/70 mb-3.5">
         <p>• <strong>수집 및 이용 목적:</strong> 토론 안건 접수, 제안자 본인 확인, 처리 결과 안내</p>
         <p>• <strong>수집 항목:</strong> 구글 프로필 이메일, 제안자 성명, 선택 소속(학생·학부모·교원)</p>
@@ -385,12 +391,28 @@
         }
       });
 
+      // 브라우저 뒤로가기 버튼 / 모바일 뒤로가기 제스처 감지
+      window.addEventListener("popstate", () => {
+        const privacyModal = document.getElementById("privacyDetailModal");
+        const proposalModal = document.getElementById("proposalModal");
+
+        if (!privacyModal.classList.contains("hidden")) {
+          closePrivacyModal(true);
+          return;
+        }
+
+        if (!proposalModal.classList.contains("hidden")) {
+          closeProposalModal(true);
+        }
+      });
+
+      // 키보드 ESC 키 감지
       window.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
           const privacyModal = document.getElementById("privacyDetailModal");
           const proposalModal = document.getElementById("proposalModal");
           if (!privacyModal.classList.contains("hidden")) {
-            privacyModal.classList.add("hidden");
+            closePrivacyModal();
           } else if (!proposalModal.classList.contains("hidden")) {
             closeProposalModal();
           }
@@ -450,7 +472,6 @@
         `;
         textEl.innerText = "저장 중...";
       } else if (state === "saved") {
-        // 구글 문서처럼 구름 안에 체크가 들어간 아이콘
         iconEl.innerHTML = `
           <svg class="w-4 h-4 text-stone-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
@@ -707,6 +728,9 @@
       document.getElementById("proposalModal").classList.remove("hidden");
       document.body.style.overflow = "hidden";
 
+      // 가상 히스토리 추가 (뒤로가기 시 사이트 이탈 방지)
+      history.pushState({ modal: "proposal" }, "");
+
       if (window.turnstile) {
         if (turnstileWidgetId !== null) {
           turnstile.remove(turnstileWidgetId);
@@ -730,8 +754,11 @@
       }
     }
 
-    function closeProposalModal() {
-      document.getElementById("proposalModal").classList.add("hidden");
+    function closeProposalModal(fromPopState = false) {
+      const modal = document.getElementById("proposalModal");
+      if (modal.classList.contains("hidden")) return;
+
+      modal.classList.add("hidden");
       document.body.style.overflow = "auto";
       const chk = document.getElementById("privacyConsent");
       chk.checked = false;
@@ -742,17 +769,34 @@
         turnstileWidgetId = null;
       }
       isPollingActive = true;
+
+      // 뒤로가기 버튼이 아닌 닫기 버튼/ESC로 닫았을 때 히스토리 스택 정리
+      if (!fromPopState && history.state && history.state.modal === "proposal") {
+        history.back();
+      }
     }
 
     function openPrivacyModal() {
+      history.pushState({ modal: "privacy" }, "");
       document.getElementById("privacyDetailModal").classList.remove("hidden");
+    }
+
+    function closePrivacyModal(fromPopState = false) {
+      const privacyModal = document.getElementById("privacyDetailModal");
+      if (privacyModal.classList.contains("hidden")) return;
+
+      privacyModal.classList.add("hidden");
+
+      if (!fromPopState && history.state && history.state.modal === "privacy") {
+        history.back();
+      }
     }
 
     function confirmPrivacyRead() {
       const consentChk = document.getElementById("privacyConsent");
       consentChk.disabled = false;
       consentChk.checked = true;
-      document.getElementById("privacyDetailModal").classList.add("hidden");
+      closePrivacyModal();
       showToast("이용 약관 동의가 완료되었습니다.");
     }
 
