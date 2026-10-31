@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>학교 정기토론 안건 플랫폼</title>
+
+  <!-- 🛠️ [점검 모드 스위치] 평소에는 false, 사이트 점검 시 true로 변경하세요. -->
+  <script>
+    const IS_MAINTENANCE_MODE = true;
+  </script>
   
   <link rel="icon" type="image/png" href="./logo.png">
   <link rel="apple-touch-icon" href="./logo.png">
@@ -68,22 +73,32 @@
 </head>
 <body class="bg-stone-100 text-stone-800 min-h-screen flex flex-col justify-between relative selection:bg-emerald-100 selection:text-emerald-900">
 
-  <!-- 점검 모드 화면 -->
+  <!-- 점검 모드 화면 (바탕화면 색상 일체화 및 문의 이메일 연결) -->
   <div id="maintenanceScreen" class="hidden fixed inset-0 bg-stone-100 z-[999] flex flex-col items-center justify-center p-6 text-center">
-    <div class="w-full max-w-md bg-white border border-stone-200 rounded-xl p-8 shadow-sm space-y-4">
-      <div class="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-lg flex items-center justify-center mx-auto shadow-xs">
+    <div class="w-full max-w-sm p-4 text-center space-y-4">
+      <div class="w-12 h-12 bg-stone-200/70 text-emerald-700 rounded-xl flex items-center justify-center mx-auto shadow-xs">
         <i data-lucide="wrench" class="w-6 h-6 animate-pulse"></i>
       </div>
+      
       <div class="space-y-1.5">
-        <h1 class="text-base font-bold text-stone-900 tracking-tight">시스템 점검 및 업데이트 중</h1>
+        <h1 class="text-lg font-bold text-stone-900 tracking-tight">시스템 점검 및 업데이트 안내</h1>
         <p class="text-xs sm:text-sm text-stone-500 leading-relaxed">
-          더 안정적인 토론 플랫폼 제공을 위해<br>잠시 시스템 점검을 진행하고 있습니다.
+          더 안정적인 토론 플랫폼 운영을 위해<br>잠시 시스템 점검을 진행하고 있습니다.
         </p>
       </div>
-      <button onclick="location.reload()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-medium py-2.5 rounded-lg text-xs sm:text-sm transition shadow-sm flex items-center justify-center gap-1.5">
-        <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
-        <span>새로고침하여 확인하기</span>
-      </button>
+
+      <div class="bg-stone-200/50 border border-stone-200 rounded-lg p-3 text-left space-y-2 text-xs">
+        <div class="flex items-start gap-2">
+          <span class="font-semibold text-stone-700 shrink-0 w-16">• 점검 시간:</span>
+          <span class="text-stone-600">점검 완료 시 즉시 오픈 예정</span>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="font-semibold text-stone-700 shrink-0 w-16">• 문의 사항:</span>
+          <a href="mailto:Nogbosoo@2woo.net" class="text-emerald-700 hover:underline font-medium break-all">Nogbosoo@2woo.net</a>
+        </div>
+      </div>
+      
+      <p class="text-[11px] text-stone-400">점검이 끝나는 대로 안건 제안 및 공감 기능이 정상 오픈됩니다.</p>
     </div>
   </div>
 
@@ -155,11 +170,11 @@
 
       <div class="flex items-center justify-between gap-2 pt-1 border-t border-stone-100">
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" id="filterTabs">
-          <button onclick="setFilter('all')" data-filter="all" class="filter-btn shrink-0 text-xs font-semibold px-2.5 py-1 rounded-md bg-stone-900 text-white transition">전체</button>
-          <button onclick="setFilter('qualified')" data-filter="qualified" class="filter-btn shrink-0 text-xs font-medium px-2.5 py-1 rounded-md bg-stone-100 text-stone-600 hover:bg-stone-200/70 transition">상정 대상 (10+)</button>
-          <button onclick="setFilter('학생')" data-filter="학생" class="filter-btn shrink-0 text-xs font-medium px-2.5 py-1 rounded-md bg-stone-100 text-stone-600 hover:bg-stone-200/70 transition">재학생</button>
-          <button onclick="setFilter('학부모')" data-filter="학부모" class="filter-btn shrink-0 text-xs font-medium px-2.5 py-1 rounded-md bg-stone-100 text-stone-600 hover:bg-stone-200/70 transition">학부모</button>
-          <button onclick="setFilter('교직원')" data-filter="교직원" class="filter-btn shrink-0 text-xs font-medium px-2.5 py-1 rounded-md bg-stone-100 text-stone-600 hover:bg-stone-200/70 transition">교직원</button>
+          <button onclick="setFilter('all')" data-filter="all" class="filter-btn shrink-0 text-xs font-semibold px-2.5 py-1.5 rounded-md bg-stone-900 text-white transition">전체</button>
+          <button onclick="setFilter('qualified')" data-filter="qualified" class="filter-btn shrink-0 text-xs font-medium px-2.5 py-1.5 rounded-md bg-stone-100 text-stone-600 hover:bg-stone-200/70 transition">상정 대상 (10+)</button>
+          <button onclick="setFilter('학생')" data-filter="학생" class="filter-btn shrink-0 text-xs font-medium px-2.5 py-1.5 rounded-md bg-stone-100 text-stone-600 hover:bg-stone-200/70 transition">재학생</button>
+          <button onclick="setFilter('학부모')" data-filter="학부모" class="filter-btn shrink-0 text-xs font-medium px-2.5 py-1.5 rounded-md bg-stone-100 text-stone-600 hover:bg-stone-200/70 transition">학부모</button>
+          <button onclick="setFilter('교직원')" data-filter="교직원" class="filter-btn shrink-0 text-xs font-medium px-2.5 py-1.5 rounded-md bg-stone-100 text-stone-600 hover:bg-stone-200/70 transition">교직원</button>
         </div>
       </div>
     </div>
@@ -195,7 +210,7 @@
         <div class="h-4 w-px bg-stone-200"></div>
         <h3 class="font-bold text-stone-900 text-base">새 안건 제안하기</h3>
         
-        <!-- 구글 문서 스타일 실시간 저장 상태 ("저장됨"으로 적용) -->
+        <!-- 실시간 저장 상태 (구름 안 체크 SVG + '저장됨') -->
         <div id="saveStatus" class="hidden flex items-center gap-1 text-xs text-stone-500 font-normal transition-all ml-1">
           <span id="saveStatusIcon" class="flex items-center">
             <svg class="w-4 h-4 text-stone-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -307,9 +322,10 @@
   </button>
 
   <script>
-    // [점검 모드 스위치] 평소엔 false, 나중에 사이트를 점검 상태로 닫고 싶을 때만 true로 변경하세요!
-    const IS_MAINTENANCE_MODE = false; 
+    // 임시저장 만료 시간 (10분)
+    const DRAFT_EXPIRE_MS = 10 * 60 * 1000;
 
+    // 상단 스위치에 따라 점검 모드 활성화 처리
     if (IS_MAINTENANCE_MODE) {
       document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("maintenanceScreen").classList.remove("hidden");
@@ -377,6 +393,7 @@
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible' && isPollingActive) {
           fetchAgendas(false);
+          checkDraftExpiry();
         }
       });
 
@@ -391,7 +408,7 @@
         }
       });
 
-      // 브라우저 뒤로가기 버튼 / 모바일 제스처 감지
+      // 브라우저 뒤로가기 / 모바일 제스처 처리
       window.addEventListener("popstate", (e) => {
         const privacyModal = document.getElementById("privacyDetailModal");
         const proposalModal = document.getElementById("proposalModal");
@@ -405,7 +422,7 @@
         closeProposalModal(true);
       });
 
-      // 키보드 ESC 키 감지
+      // ESC 키 감지
       window.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
           const privacyModal = document.getElementById("privacyDetailModal");
@@ -421,7 +438,20 @@
       document.addEventListener('contextmenu', (e) => e.preventDefault());
     });
 
+    // 10분 만료 체크 함수
+    function checkDraftExpiry() {
+      const savedTime = localStorage.getItem("draft_timestamp");
+      if (savedTime && Date.now() - Number(savedTime) > DRAFT_EXPIRE_MS) {
+        clearDrafts();
+        return true;
+      }
+      return false;
+    }
+
     function initDraftSystem() {
+      const isExpired = checkDraftExpiry();
+      if (isExpired) return;
+
       const fields = ['userRole', 'agendaTitle', 'agendaContent'];
       let hasSavedDraft = false;
 
@@ -435,6 +465,7 @@
 
         el.addEventListener('input', (e) => {
           localStorage.setItem(`draft_${id}`, e.target.value);
+          localStorage.setItem("draft_timestamp", Date.now());
           triggerAutoSaveMotion();
           updateCharCounters();
         });
@@ -490,6 +521,7 @@
 
     function clearDrafts() {
       ['userRole', 'agendaTitle', 'agendaContent'].forEach(id => localStorage.removeItem(`draft_${id}`));
+      localStorage.removeItem("draft_timestamp");
       document.getElementById("proposalForm").reset();
       document.getElementById("saveStatus").classList.add("hidden");
       updateCharCounters();
@@ -542,9 +574,9 @@
       currentFilter = filterType;
       document.querySelectorAll(".filter-btn").forEach(btn => {
         if (btn.dataset.filter === filterType) {
-          btn.className = "filter-btn shrink-0 text-xs font-semibold px-2.5 py-1 rounded-md bg-stone-900 text-white transition";
+          btn.className = "filter-btn shrink-0 text-xs font-semibold px-2.5 py-1.5 rounded-md bg-stone-900 text-white transition";
         } else {
-          btn.className = "filter-btn shrink-0 text-xs font-medium px-2.5 py-1 rounded-md bg-stone-100 text-stone-600 hover:bg-stone-200/70 transition";
+          btn.className = "filter-btn shrink-0 text-xs font-medium px-2.5 py-1.5 rounded-md bg-stone-100 text-stone-600 hover:bg-stone-200/70 transition";
         }
       });
       renderAgendas();
@@ -723,11 +755,12 @@
     }
 
     function openProposalModal() {
+      checkDraftExpiry();
+
       isPollingActive = false;
       document.getElementById("proposalModal").classList.remove("hidden");
       document.body.style.overflow = "hidden";
 
-      // 가상 히스토리 추가 (뒤로가기 시 사이트 이탈 방지)
       history.pushState({ modal: "proposal" }, "");
 
       if (window.turnstile) {
@@ -769,7 +802,6 @@
       }
       isPollingActive = true;
 
-      // 직접 닫기 버튼/ESC를 누른 경우 히스토리 스택 정리
       if (!fromPopState && history.state && history.state.modal === "proposal") {
         history.back();
       }
@@ -786,7 +818,6 @@
 
       privacyModal.classList.add("hidden");
 
-      // 직접 X 버튼/ESC를 누른 경우 히스토리 스택 정리
       if (!fromPopState && history.state && history.state.modal === "privacy") {
         history.back();
       }
